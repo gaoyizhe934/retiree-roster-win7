@@ -1,0 +1,189 @@
+{
+  "pr2_head": "279a204aaf00233fac262f79ac4e3dd80d392f21",
+  "contract_version": 3,
+  "status": "Draft",
+  "checks": [
+    {
+      "check": "34字段与契约枚举完整一致",
+      "pass": true,
+      "detail": "FieldSpec与PersonFieldId逐项及顺序核对"
+    },
+    {
+      "check": "字段能力由契约解析",
+      "pass": true,
+      "detail": "ImportFieldId/EditableFieldId与source_importable/user_editable一致"
+    },
+    {
+      "check": "系统字段边界",
+      "pass": true,
+      "detail": "6个系统专管字段无导入和编辑入口"
+    },
+    {
+      "check": "拼音创建与编辑边界",
+      "pass": true,
+      "detail": "服务初始化、禁止导入、后续可编辑"
+    },
+    {
+      "check": "唯一导入必填",
+      "pass": true,
+      "detail": "LifeStatus必须解析，独立于required_for_import元数据"
+    },
+    {
+      "check": "PersonId/PersonCode/工号三分离",
+      "pass": true,
+      "detail": "工号不作为内部ID或固定编号"
+    },
+    {
+      "check": "Person输入不收系统字段",
+      "pass": true,
+      "detail": "新增仅PersonCreateInput，编辑仅FieldChange/EditableFieldId"
+    },
+    {
+      "check": "Tag不混入Person",
+      "pass": true,
+      "detail": "独立代码、值、适用年、添加修改删除、只读审计"
+    },
+    {
+      "check": "Tag年度与审计边界",
+      "pass": true,
+      "detail": "updated_at/updated_by无提交入口；高龄不持久化"
+    },
+    {
+      "check": "日期精度覆盖",
+      "pass": true,
+      "detail": "六个DateValue字段各有精度与年月日组件；未知不为0年龄"
+    },
+    {
+      "check": "全列三种处置",
+      "pass": true,
+      "detail": "默认Unsupported；BatchRawOnly本机原值不进Person或公共日志"
+    },
+    {
+      "check": "无冻结Profile自动直入",
+      "pass": true,
+      "detail": "仅已冻结唯一匹配可预填；所有路径预检"
+    },
+    {
+      "check": "确认仅绑定revision",
+      "pass": true,
+      "detail": "预检不可变，变化获得新revision，确认无第二套语义"
+    },
+    {
+      "check": "FilterSpec全能力",
+      "pass": true,
+      "detail": "三场景、显式状态、年龄口径、集合/下限、两组All/Any、八种比较"
+    },
+    {
+      "check": "无最大年龄输入",
+      "pass": true,
+      "detail": "当前只有集合与含边界下限"
+    },
+    {
+      "check": "P40/P50消费快照",
+      "pass": true,
+      "detail": "三输出不再接收FilterSpec"
+    },
+    {
+      "check": "快照失效范围",
+      "pass": true,
+      "detail": "失效禁输出，回P30；不会混入新数据"
+    },
+    {
+      "check": "T03编号与派生列",
+      "pass": true,
+      "detail": "固定编号PersonCode；年度年龄及党龄从快照读取"
+    },
+    {
+      "check": "模板契约与来源",
+      "pass": true,
+      "detail": "模板所有成员、四来源；候选JSON另有status说明"
+    },
+    {
+      "check": "签字是独立列",
+      "pass": true,
+      "detail": "统一columns[]，无第二个签字开关"
+    },
+    {
+      "check": "物理尺寸整数与人数语义",
+      "pass": true,
+      "detail": "内部0.1mm，UI毫米转换，正数人数校验"
+    },
+    {
+      "check": "模板算术范围",
+      "pass": true,
+      "detail": "[{\"template_id\": \"T01\", \"unit\": \"0.1mm\", \"used_width\": 1540, \"available_width\": 1800, \"used_height\": 2400, \"available_height\": 2670, \"pass\": true, \"scope\": \"仅作者建议预留的算术；硬边距/字体/转换未验收\"}, {\"template_id\": \"T02\", \"unit\": \"0.1mm\", \"used_width\": 1540, \"available_width\": 1800, \"used_height\": 2380, \"available_height\": 2670, \"pass\": true, \"scope\": \"仅作者建议预留的算术；硬边距/字体/转换未验收\"}, {\"template_id\": \"T03\", \"unit\": \"0.1mm\", \"used_width\": 2520, \"available_width\": 2670, \"used_height\": 1720, \"available_height\": 1800, \"pass\": true, \"scope\": \"仅作者建议预留的算术；硬边距/字体/转换未验收\"}]"
+    },
+    {
+      "check": "控件编号及八项记录",
+      "pass": true,
+      "detail": "239项；全部编号、名称、类型、用途、默认、启用、校验、错误"
+    },
+    {
+      "check": "Tab覆盖操作控件",
+      "pass": true,
+      "detail": "224项，日期精度组件分列"
+    },
+    {
+      "check": "当前Draft与R未代签",
+      "pass": true,
+      "detail": "九脚本待R，契约与数据库版本分开，未声明Gate通过"
+    },
+    {
+      "check": "PR2契约指纹未变",
+      "pass": true,
+      "detail": "与读取PR2 HEAD时的UTF-8文本指纹一致，不声称冻结Schema"
+    },
+    {
+      "check": "原始资料指纹：退休人员名册打印小程序需求说明.docx",
+      "pass": true,
+      "detail": "与PR2原始文件基线一致，路径为仓库相对位置"
+    },
+    {
+      "check": "原始资料指纹：退休人员名册打印小程序开发规划.docx",
+      "pass": true,
+      "detail": "与PR2原始文件基线一致，路径为仓库相对位置"
+    },
+    {
+      "check": "原始资料指纹：七阶段开发任务清单.xlsx",
+      "pass": true,
+      "detail": "与PR2原始文件基线一致，路径为仓库相对位置"
+    },
+    {
+      "check": "原始资料指纹：员工信息表11111.xlsx",
+      "pass": true,
+      "detail": "与PR2原始文件基线一致，路径为仓库相对位置"
+    }
+  ],
+  "layout": [
+    {
+      "template_id": "T01",
+      "unit": "0.1mm",
+      "used_width": 1540,
+      "available_width": 1800,
+      "used_height": 2400,
+      "available_height": 2670,
+      "pass": true,
+      "scope": "仅作者建议预留的算术；硬边距/字体/转换未验收"
+    },
+    {
+      "template_id": "T02",
+      "unit": "0.1mm",
+      "used_width": 1540,
+      "available_width": 1800,
+      "used_height": 2380,
+      "available_height": 2670,
+      "pass": true,
+      "scope": "仅作者建议预留的算术；硬边距/字体/转换未验收"
+    },
+    {
+      "template_id": "T03",
+      "unit": "0.1mm",
+      "used_width": 2520,
+      "available_width": 2670,
+      "used_height": 1720,
+      "available_height": 1800,
+      "pass": true,
+      "scope": "仅作者建议预留的算术；硬边距/字体/转换未验收"
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "checks": [
+    {
+      "check": "MD/HTML全部标题一致",
+      "pass": true,
+      "detail": "43个标题同序同文"
+    },
+    {
+      "check": "九章目录全部可定位",
+      "pass": true,
+      "detail": "九个正文主章节"
+    },
+    {
+      "check": "离线资源",
+      "pass": true,
+      "detail": "无外部JS/CSS/图片/iframe；基线资料链接需联网，内容无需联网"
+    },
+    {
+      "check": "表格与SVG完整",
+      "pass": true,
+      "detail": "37张表与1张阶段SVG，完整Mermaid图源可展开"
+    },
+    {
+      "check": "34字段与Tag完整显示",
+      "pass": true,
+      "detail": "全部字段能力、日期组件、独立Tag控件"
+    },
+    {
+      "check": "Q/RV/T完整",
+      "pass": true,
+      "detail": "13对接项、9复核脚本、3模板"
+    },
+    {
+      "check": "文档本地链接有效",
+      "pass": true,
+      "detail": "生成稿链接按输出目录解析；HTML基线链接固定到PR2提交"
+    },
+    {
+      "check": "无未替换占位符",
+      "pass": true,
+      "detail": "控件/字段/Tab/模板/静态检查均已生成"
+    },
+    {
+      "check": "公共材料无私有绝对路径",
+      "pass": true,
+      "detail": "README、正文、HTML、交接、修改报告及JSON证据全量扫描；HTTPS不误判为盘符"
+    },
+    {
+      "check": "公共材料无真实敏感值",
+      "pass": true,
+      "detail": "无完整证号或大陆手机号；没有导入人员原值"
+    },
+    {
+      "check": "未虚报功能/Gate",
+      "pass": true,
+      "detail": "仅作者静态证据，非产品兼容验收"
+    },
+    {
+      "check": "三模板全值同步",
+      "pass": true,
+      "detail": "MD/HTML由同一JSON模板源渲染"
+    }
+  ],
+  "scope": "MD/HTML及公共证据结构，非产品功能测试"
+}
