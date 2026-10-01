@@ -1,0 +1,42 @@
+[
+  {
+    "check": "HTML目录链接",
+    "pass": true,
+    "detail": "9个目录链接可定位"
+  },
+  {
+    "check": "HTML离线资源",
+    "pass": true,
+    "detail": "无外部脚本、样式、图片依赖；引用资料链接需联网但不影响阅读"
+  },
+  {
+    "check": "HTML表格与SVG",
+    "pass": true,
+    "detail": "37个表格、1张内嵌流转简图"
+  },
+  {
+    "check": "HTML文字覆盖",
+    "pass": true,
+    "detail": "模板、复核、未决项及字段均可阅读"
+  },
+  {
+    "check": "Tab覆盖所有可操作控件",
+    "pass": true,
+    "detail": "162个可操作控件在逐页顺序表中"
+  },
+  {
+    "check": "未虚报已通过Gate",
+    "pass": true,
+    "detail": "设计稿状态与R待复核保留"
+  },
+  {
+    "check": "三类模板均有完整参数",
+    "pass": true,
+    "detail": "名称、用途、标题、字段序宽、字体、纸张方向、四边距、人数行高齐全"
+  },
+  {
+    "check": "敏感数据不进入原型",
+    "pass": true,
+    "detail": "未出现完整身份证号；样例是规则说明而非人员资料"
+  }
+]

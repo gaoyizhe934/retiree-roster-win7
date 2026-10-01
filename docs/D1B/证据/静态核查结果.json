@@ -1,0 +1,90 @@
+{
+  "checks": [
+    {
+      "check": "控件编号唯一",
+      "pass": true,
+      "detail": "170个控件／字段展示项"
+    },
+    {
+      "check": "Schema字段覆盖",
+      "pass": true,
+      "detail": "29／29个字段逐一对应"
+    },
+    {
+      "check": "每个控件有完整八项记录",
+      "pass": true,
+      "detail": "编号、名称、类型、用途、默认、条件、校验、提示齐全"
+    },
+    {
+      "check": "模板宽高算术",
+      "pass": true,
+      "detail": "[{\"id\": \"T01\", \"width_mm\": 154, \"available_width_mm\": 180, \"height_mm\": 240, \"available_height_mm\": 267, \"pass\": true}, {\"id\": \"T02\", \"width_mm\": 154, \"available_width_mm\": 180, \"height_mm\": 238, \"available_height_mm\": 267, \"pass\": true}, {\"id\": \"T03\", \"width_mm\": 252, \"available_width_mm\": 267, \"height_mm\": 172, \"available_height_mm\": 180, \"pass\": true}]"
+    },
+    {
+      "check": "正文无未填生成占位符",
+      "pass": true,
+      "detail": "仅R签认空格与待确认项保留"
+    },
+    {
+      "check": "正文引用控件存在",
+      "pass": true,
+      "detail": "草图、字段表、Tab表引用已知编号"
+    },
+    {
+      "check": "原始文件保持：退休人员名册打印小程序需求说明.docx",
+      "pass": true,
+      "detail": "与读取时SHA-256一致"
+    },
+    {
+      "check": "原始文件保持：退休人员名册打印小程序开发规划.docx",
+      "pass": true,
+      "detail": "与读取时SHA-256一致"
+    },
+    {
+      "check": "原始文件保持：员工信息表11111.xlsx",
+      "pass": true,
+      "detail": "与读取时SHA-256一致"
+    },
+    {
+      "check": "原始文件保持：七阶段开发任务清单.xlsx",
+      "pass": true,
+      "detail": "与读取时SHA-256一致"
+    },
+    {
+      "check": "冻结Schema保持",
+      "pass": true,
+      "detail": "与2026-09-21冻结值一致"
+    },
+    {
+      "check": "R结论未预填通过",
+      "pass": true,
+      "detail": "9项操作走查保留待复核"
+    }
+  ],
+  "layout": [
+    {
+      "id": "T01",
+      "width_mm": 154,
+      "available_width_mm": 180,
+      "height_mm": 240,
+      "available_height_mm": 267,
+      "pass": true
+    },
+    {
+      "id": "T02",
+      "width_mm": 154,
+      "available_width_mm": 180,
+      "height_mm": 238,
+      "available_height_mm": 267,
+      "pass": true
+    },
+    {
+      "id": "T03",
+      "width_mm": 252,
+      "available_width_mm": 267,
+      "height_mm": 172,
+      "available_height_mm": 180,
+      "pass": true
+    }
+  ]
+}
