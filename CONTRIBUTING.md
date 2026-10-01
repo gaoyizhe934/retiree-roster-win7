@@ -19,17 +19,17 @@
 分支名格式为：
 
 ```text
-类型/简短中文主题
+类型/short-english-topic
 ```
 
-允许的类型为 `feat`、`fix`、`docs`、`test`、`refactor` 或 `chore`。禁止使用 `codex/` 前缀。
+允许的类型为 `feat`、`fix`、`docs`、`test`、`refactor` 或 `chore`。完整名称只能含 ASCII 字符；主题仅用小写英文、数字和连字符。禁止使用 `codex/` 前缀。命名细则见 [GitHub协作命名规范](GitHub协作命名规范.md)，已有旧分支不擅自改名。
 
 示例：
 
 ```text
-feat/实现表头识别
-docs/补充贡献指南
-fix/修复日期校验
+feat/header-recognition
+docs/contribution-guide
+fix/date-validation
 ```
 
 ## 提交规范
@@ -63,15 +63,17 @@ test: 增加日期边界测试
 
 - 推送分支前，先同步 `main` 并处理冲突；不要覆盖他人改动或改写历史。
 - PR 标题使用 `类型: 中文变更摘要`。如需记录开发日和轨道，在 PR 正文首行填写 `阶段/轨道：D{阶段}{轨道}`，例如 `阶段/轨道：D1B`。
-- 新的一天创建新的 PR，不修改其他人的 PR。
+- 每张 D{日}{轨道} 任务卡使用一个独立 PR。同一任务卡的 review 返工继续追加原 PR；不同轨道即使同一天也分别建 PR。禁止将两个 Gate 或两张任务卡混入一个 PR，不修改其他人的 PR。
 - 评审要求修改后，在原 PR 追加中文修改报告评论，不改写原始 PR 正文。
 - PR 合并前应完成关联的验证，并由授权人员确认。
+- 作者不得代替 R 完成非作者签认。Gate 结论统一记录在 [Gate Status](docs/status/GATE_STATUS.md)，PR 中不得自行宣布契约冻结。
 
 ## 质量与数据边界
 
 - 修改后按风险运行适当的构建、测试、导入校验或文档检查，并如实报告失败和限制。
 - 真实人员数据、身份证号、电话、家庭地址、备份和未授权工作资料不得上传到公开仓库。
 - 数据库、导入、筛选和打印模块必须使用 `include/retiree_roster/schema_types.hpp` 中的集中式类型契约，不应自行定义相同字段的私有 DTO。
+- 契约服从 [基线与权威来源](docs/baseline/00_基线与权威来源.md)，未完成 Gate 审批时为 Draft。README 和 DTO 均不能新增或覆盖业务要求。
 - 记录技术债时，先更新技术债文档，再创建同编号的 GitHub Issue；编号格式为 `TD-年份-三位流水号`。
 
 ## 收尾与交接

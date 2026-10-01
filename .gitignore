@@ -1,0 +1,37 @@
+# 构建与 IDE
+.vs/
+.xmake/
+build/
+dist/
+out/
+*.obj
+*.o
+*.pdb
+*.ilk
+*.user
+*.suo
+*.exe
+*.dll
+*.lib
+*.a
+
+# 本地运行数据（包括嵌套目录）
+data/**
+!data/.gitkeep
+backups/**
+!backups/.gitkeep
+exports/**
+!exports/.gitkeep
+logs/**
+!logs/.gitkeep
+*.db
+*.db-*
+*.sqlite*
+
+# 临时 Office、Python 与作者中间文件
+~$*.xlsx
+~$*.docx
+*.tmp
+__pycache__/
+*.pyc
+辅助生成文件/

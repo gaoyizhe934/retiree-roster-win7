@@ -3,18 +3,19 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-// This header is the single field contract for UI, application services,
-// SQLite adapters, xlsx adapters, print templates, and all API DTOs.
+// Draft contract: authority and approval live in docs/baseline and Gate Status.
+// This header does not define or override business requirements.
 // It deliberately uses only C++14 standard-library types for the Win7 target.
 namespace retiree_roster {
 namespace schema {
 
 using SchemaVersion = std::uint32_t;
-constexpr SchemaVersion kCurrentSchemaVersion = 1U;
+constexpr SchemaVersion kCurrentSchemaVersion = 2U;  // Draft revision, not a Gate freeze.
 
 using PersonId = std::string;
 using ImportBatchId = std::string;
@@ -22,23 +23,57 @@ using TemplateId = std::string;
 using FilterId = std::string;
 using RequestId = std::string;
 using UserId = std::string;
+using PersonCode = std::string;
+using SnapshotId = std::string;
+using ExportId = std::string;
+using TagCode = std::string;
+using DataVersion = std::uint64_t;
 
-// An empty date means "unknown". Do not overload 1900-01-01 or another real date.
-struct LocalDate {
+// Attribution only. No authentication or authorization is implied.
+struct OperatorContext {
+    UserId operator_id;
+    std::string display_name;
+};
+
+enum class DatePrecision : std::uint8_t { Unknown, Year, YearMonth, FullDate };
+
+// Preserve source precision. Missing components are zero, never invented.
+struct DateValue {
     std::int32_t year = 0;
     std::uint8_t month = 0;
     std::uint8_t day = 0;
+    DatePrecision precision = DatePrecision::Unknown;
+
+    bool is_valid() const {
+        if (precision == DatePrecision::Unknown) {
+            return year == 0 && month == 0 && day == 0;
+        }
+        if (year < 1 || year > 9999) { return false; }
+        if (precision == DatePrecision::Year) { return month == 0 && day == 0; }
+        if (month < 1 || month > 12) { return false; }
+        if (precision == DatePrecision::YearMonth) { return day == 0; }
+        if (precision != DatePrecision::FullDate) { return false; }
+        const std::uint8_t days[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        const bool leap = year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+        const std::uint8_t limit = (month == 2 && leap) ? 29 : days[month - 1];
+        return day >= 1 && day <= limit;
+    }
 
     bool is_known() const {
-        return year > 0 && month >= 1U && month <= 12U && day >= 1U && day <= 31U;
+        return precision != DatePrecision::Unknown && is_valid();
     }
+
+    bool is_full_date() const { return precision == DatePrecision::FullDate && is_valid(); }
 };
+
+using LocalDate = DateValue;  // Transitional name; precision remains mandatory.
 
 // ISO-8601 UTC text, for example "2026-09-21T08:30:00Z".
 // A string is intentional: C++14 has no standard time-zone type.
 using UtcTimestamp = std::string;
 
 enum class LifeStatus : std::uint8_t {
+    Unknown,  // Must be resolved before create/import confirmation.
     Living,
     Deceased,
 };
@@ -46,17 +81,16 @@ enum class LifeStatus : std::uint8_t {
 enum class FieldValueKind : std::uint8_t {
     Text,
     Date,
-    Boolean,
     EnumCode,
     Identifier,
     Timestamp,
-    TagCollection,
 };
 
 // FieldId is the canonical API/database/template identity. Do not pass free-form
 // field keys between modules; map source headings to this enum during import.
-enum class FieldId : std::uint8_t {
+enum class PersonFieldId : std::uint8_t {
     PersonId,
+    PersonCode,
     EmployeeNo,
     FullName,
     PinyinSortKey,
@@ -70,22 +104,27 @@ enum class FieldId : std::uint8_t {
     RetirementDate,
     PersonnelCategory,
     CadreRank,
-    JobTitle,
+    ProfessionalTitle,
+    PositionTitle,
+    Education,
+    Degree,
+    WorkStartDate,
+    PartyBranch,
+    PartyFullMemberDate,
+    NativePlace,
+    RelativePhone,
+    IdentityCategory,
     PoliticalAffiliation,
     PartyJoinDate,
     LifeStatus,
     DeathDate,
-    HasFinancialDifficulty,
-    HasLongTermIllness,
-    IsHighAgeMarked,
-    HasReceivedCondolenceThisYear,
     Remark,
-    TagCodes,
     CreatedAt,
     UpdatedAt,
     ImportBatchId,
     LastModifiedBy,
 };
+using FieldId = PersonFieldId;  // Person fields only; tags and derived columns are separate.
 
 struct FieldSpec {
     FieldId id;
@@ -97,9 +136,10 @@ struct FieldSpec {
     bool printable_by_default;
 };
 
-inline const std::array<FieldSpec, 29>& person_field_specs() {
-    static const std::array<FieldSpec, 29> kSpecs = {{
-        {FieldId::PersonId, "person_id", FieldValueKind::Identifier, false, false, false, true},
+inline const std::array<FieldSpec, 34>& person_field_specs() {
+    static const std::array<FieldSpec, 34> kSpecs = {{
+        {FieldId::PersonId, "person_id", FieldValueKind::Identifier, false, false, false, false},
+        {FieldId::PersonCode, "person_code", FieldValueKind::Identifier, false, false, false, true},
         {FieldId::EmployeeNo, "employee_no", FieldValueKind::Text, false, false, true, true},
         {FieldId::FullName, "full_name", FieldValueKind::Text, true, false, true, true},
         {FieldId::PinyinSortKey, "pinyin_sort_key", FieldValueKind::Text, false, false, true, false},
@@ -113,17 +153,21 @@ inline const std::array<FieldSpec, 29>& person_field_specs() {
         {FieldId::RetirementDate, "retirement_date", FieldValueKind::Date, false, false, true, true},
         {FieldId::PersonnelCategory, "personnel_category", FieldValueKind::EnumCode, false, false, true, true},
         {FieldId::CadreRank, "cadre_rank", FieldValueKind::EnumCode, false, false, true, true},
-        {FieldId::JobTitle, "job_title", FieldValueKind::Text, false, false, true, true},
+        {FieldId::ProfessionalTitle, "professional_title", FieldValueKind::Text, false, false, true, true},
+        {FieldId::PositionTitle, "position_title", FieldValueKind::Text, false, false, true, true},
+        {FieldId::Education, "education", FieldValueKind::Text, false, false, true, true},
+        {FieldId::Degree, "degree", FieldValueKind::Text, false, false, true, true},
+        {FieldId::WorkStartDate, "work_start_date", FieldValueKind::Date, false, false, true, true},
+        {FieldId::PartyBranch, "party_branch", FieldValueKind::Text, false, false, true, true},
+        {FieldId::PartyFullMemberDate, "party_full_member_date", FieldValueKind::Date, false, false, true, true},
+        {FieldId::NativePlace, "native_place", FieldValueKind::Text, false, false, true, true},
+        {FieldId::RelativePhone, "relative_phone", FieldValueKind::Text, false, true, true, false},
+        {FieldId::IdentityCategory, "identity_category", FieldValueKind::Text, false, false, true, true},
         {FieldId::PoliticalAffiliation, "political_affiliation", FieldValueKind::EnumCode, false, false, true, true},
         {FieldId::PartyJoinDate, "party_join_date", FieldValueKind::Date, false, false, true, true},
-        {FieldId::LifeStatus, "life_status", FieldValueKind::EnumCode, true, false, true, true},
+        {FieldId::LifeStatus, "life_status", FieldValueKind::EnumCode, false, false, true, true},
         {FieldId::DeathDate, "death_date", FieldValueKind::Date, false, false, true, false},
-        {FieldId::HasFinancialDifficulty, "has_financial_difficulty", FieldValueKind::Boolean, false, false, true, true},
-        {FieldId::HasLongTermIllness, "has_long_term_illness", FieldValueKind::Boolean, false, false, true, true},
-        {FieldId::IsHighAgeMarked, "is_high_age_marked", FieldValueKind::Boolean, false, false, true, false},
-        {FieldId::HasReceivedCondolenceThisYear, "has_received_condolence_this_year", FieldValueKind::Boolean, false, false, true, false},
         {FieldId::Remark, "remark", FieldValueKind::Text, false, false, true, false},
-        {FieldId::TagCodes, "tag_codes", FieldValueKind::TagCollection, false, false, true, false},
         {FieldId::CreatedAt, "created_at", FieldValueKind::Timestamp, false, false, false, false},
         {FieldId::UpdatedAt, "updated_at", FieldValueKind::Timestamp, false, false, false, false},
         {FieldId::ImportBatchId, "import_batch_id", FieldValueKind::Identifier, false, false, false, false},
@@ -133,7 +177,7 @@ inline const std::array<FieldSpec, 29>& person_field_specs() {
 }
 
 inline const FieldSpec* find_person_field(const std::string& key) {
-    const std::array<FieldSpec, 29>& specs = person_field_specs();
+    const auto& specs = person_field_specs();
     for (std::size_t i = 0; i < specs.size(); ++i) {
         if (key == specs[i].key) {
             return &specs[i];
@@ -143,7 +187,7 @@ inline const FieldSpec* find_person_field(const std::string& key) {
 }
 
 inline const FieldSpec* find_person_field(FieldId id) {
-    const std::array<FieldSpec, 29>& specs = person_field_specs();
+    const auto& specs = person_field_specs();
     for (std::size_t i = 0; i < specs.size(); ++i) {
         if (id == specs[i].id) {
             return &specs[i];
@@ -155,13 +199,6 @@ inline const FieldSpec* find_person_field(FieldId id) {
 inline bool is_current_schema(SchemaVersion version) {
     return version == kCurrentSchemaVersion;
 }
-
-struct CareFlags {
-    bool has_financial_difficulty = false;
-    bool has_long_term_illness = false;
-    bool is_high_age_marked = false;
-    bool has_received_condolence_this_year = false;
-};
 
 struct AuditFields {
     UtcTimestamp created_at;
@@ -175,6 +212,7 @@ struct AuditFields {
 // them from dates or list context and must never persist them as source data.
 struct PersonRecord {
     PersonId person_id;
+    PersonCode person_code;  // User-visible fixed roster number; not the source employee number.
     std::string employee_no;
     std::string full_name;
     std::string pinyin_sort_key;
@@ -190,22 +228,31 @@ struct PersonRecord {
     LocalDate retirement_date;
     std::string personnel_category;
     std::string cadre_rank;
-    std::string job_title;
+    std::string professional_title;
+    std::string position_title;
+    std::string education;
+    std::string degree;
+    DateValue work_start_date;
+    std::string party_branch;
+    DateValue party_full_member_date;
+    std::string native_place;
+    std::string relative_phone;
+    std::string identity_category;
 
     std::string political_affiliation;
     LocalDate party_join_date;
-    LifeStatus life_status = LifeStatus::Living;
+    LifeStatus life_status = LifeStatus::Unknown;
     LocalDate death_date;
 
-    CareFlags care;
     std::string remark;
     AuditFields audit;
 };
 
 struct TagRecord {
     PersonId person_id;
-    std::string tag_code;
+    TagCode tag_code;
     std::string tag_value;
+    std::int32_t applicable_year = 0;  // 0 = not year scoped; condolence uses a year.
     UtcTimestamp updated_at;
     UserId updated_by;
 };
@@ -216,13 +263,34 @@ struct FieldChange {
     FieldId field;
     std::string value;
     bool clear_value = false;
+    DateValue date_value;  // Date fields use this; text is not an implicit date parser.
 };
+
+enum class ImportColumnDisposition : std::uint8_t { PersonField, BatchRawOnly, Unsupported };
 
 struct ImportColumnBinding {
     std::size_t source_column_index = 0;
     std::string source_column_name;
     FieldId target_field = FieldId::FullName;
     bool required = false;
+    ImportColumnDisposition disposition = ImportColumnDisposition::Unsupported;
+};
+
+enum class StatusSource : std::uint8_t { Unresolved, SourceColumn, ConfirmedBatchDefault, FrozenProfile, Mixed };
+
+struct ImportStatusResolution {
+    StatusSource source = StatusSource::Unresolved;
+    LifeStatus fallback_status = LifeStatus::Unknown;
+    bool fallback_confirmed = false;
+};
+
+struct ImportProfile {
+    std::string profile_id;
+    std::uint32_t version = 0;
+    std::size_t header_row_number = 0;
+    std::vector<ImportColumnBinding> column_bindings;
+    ImportStatusResolution status_resolution;
+    bool frozen = false;
 };
 
 enum class ImportErrorCode : std::uint8_t {
@@ -232,6 +300,9 @@ enum class ImportErrorCode : std::uint8_t {
     DuplicateCandidate,
     UnknownColumn,
     UnsupportedWorkbook,
+    UnresolvedLifeStatus,
+    AmbiguousColumn,
+    UnsupportedColumn,
 };
 
 struct ImportIssue {
@@ -252,8 +323,39 @@ struct ImportPreview {
     std::size_t valid_record_count = 0;
     std::size_t invalid_record_count = 0;
     std::size_t duplicate_candidate_count = 0;
+    std::size_t unresolved_duplicate_count = 0;
+    std::string profile_id;
+    std::uint32_t profile_version = 0;
+    std::uint32_t mapping_version = 0;
+    ImportStatusResolution status_resolution;
     std::vector<ImportColumnBinding> column_bindings;
     std::vector<ImportIssue> issues;
+};
+
+// BatchRawOnly cells are private local import data, never public evidence or logs.
+struct ImportRawCell {
+    ImportBatchId batch_id;
+    std::size_t source_row_number = 0;
+    std::size_t source_column_index = 0;
+    std::string source_column_name;
+    std::string original_value;
+};
+
+struct ImportBatchRecord {
+    ImportBatchId batch_id;
+    std::string source_file_name;  // Basename only; no permanent sensitive absolute path.
+    std::string worksheet_name;
+    std::size_t source_record_count = 0;
+    std::size_t valid_record_count = 0;
+    std::size_t imported_record_count = 0;
+    std::size_t invalid_record_count = 0;
+    std::size_t duplicate_candidate_count = 0;
+    std::string profile_id;
+    std::uint32_t profile_version = 0;
+    std::uint32_t mapping_version = 0;
+    ImportStatusResolution status_resolution;
+    UtcTimestamp executed_at;
+    UserId executed_by;
 };
 
 enum class Comparison : std::uint8_t {
@@ -274,42 +376,126 @@ struct FieldCondition {
     std::string second_value;
 };
 
+enum class MatchMode : std::uint8_t { All, Any };
+enum class RosterScenario : std::uint8_t { Custom, Chongyang, Party50 };
+enum class LifeStatusFilter : std::uint8_t { Unspecified, LivingOnly, DeceasedOnly, All };
+enum class AgeBasis : std::uint8_t { CompletedAge, CalendarYearAge };
+
+// accepted_values OR inclusive lower bound, applied only when enabled.
+struct YearCountCondition {
+    bool enabled = false;
+    std::vector<std::int32_t> accepted_values;
+    bool has_minimum = false;
+    std::int32_t minimum = 0;
+};
+
+struct TagCondition {
+    TagCode tag_code;
+    std::string tag_value;
+    std::int32_t applicable_year = 0;
+};
+
 struct FilterSpec {
     FilterId filter_id;
     std::string display_name;
     std::int32_t target_year = 0;
-    bool include_deceased = false;
+    DateValue as_of_date;  // FullDate required; UI supplies today, tests a fixed date.
+    RosterScenario scenario = RosterScenario::Custom;
+    LifeStatusFilter life_status = LifeStatusFilter::Unspecified;
+    AgeBasis age_basis = AgeBasis::CalendarYearAge;
+    YearCountCondition age;
+    YearCountCondition party_seniority;
+    bool require_party_member = false;
+    MatchMode field_match = MatchMode::All;
     std::vector<FieldCondition> conditions;
-    std::vector<std::string> required_tag_codes;
+    MatchMode tag_match = MatchMode::All;
+    std::vector<TagCondition> tags;
 };
 
 struct RosterRow {
     PersonId person_id;
     std::size_t print_serial_number = 0;
     PersonRecord person;
+    std::vector<TagRecord> tags;  // Same data version as person; output never refetches tags.
     std::int32_t completed_age = -1;
     std::int32_t calendar_year_age = -1;
     std::int32_t party_seniority_years = -1;
 };
 
+struct RosterResult {
+    SnapshotId snapshot_id;
+    DataVersion data_version = 0;
+    UtcTimestamp generated_at;
+    FilterSpec filter_spec;  // Resolved scenario conditions, for display/audit only.
+    std::vector<RosterRow> rows;
+    std::size_t total_count = 0;
+};
+
+enum class DerivedColumnId : std::uint8_t {
+    PrintSerialNumber, CompletedAge, CalendarYearAge, PartySeniorityYears,
+};
+enum class TemplateColumnSource : std::uint8_t {
+    PersonField, DerivedField, BlankSignature, StaticText,
+};
+
 struct TemplateColumn {
+    TemplateColumnSource source = TemplateColumnSource::PersonField;
     FieldId field = FieldId::FullName;
+    DerivedColumnId derived_field = DerivedColumnId::PrintSerialNumber;
+    std::string static_text;
     std::string display_name;
-    std::uint16_t width_in_chars = 12;
+    std::uint16_t width_tenth_mm = 200;
     bool visible = true;
+};
+
+enum class PaperSize : std::uint8_t { A4 };
+enum class PageOrientation : std::uint8_t { Portrait, Landscape };
+enum class PageNumberPolicy : std::uint8_t { None, CurrentAndTotal };
+
+struct PageMargins {
+    std::uint16_t left_tenth_mm = 150;
+    std::uint16_t right_tenth_mm = 150;
+    std::uint16_t top_tenth_mm = 150;
+    std::uint16_t bottom_tenth_mm = 150;
 };
 
 struct PrintTemplate {
     TemplateId template_id;
+    std::uint32_t template_version = 0;
     std::string template_name;
     std::string title;
     std::vector<TemplateColumn> columns;
     std::uint16_t font_size_pt = 12;
-    bool landscape = false;
+    std::uint16_t title_font_size_pt = 18;
+    std::uint16_t header_font_size_pt = 12;
+    PaperSize paper_size = PaperSize::A4;
+    PageOrientation orientation = PageOrientation::Portrait;
+    PageMargins margins;
+    std::uint16_t row_height_tenth_mm = 100;
     std::uint16_t rows_per_page = 0;
     bool repeat_header = true;
-    bool add_signature_column = false;
-    bool add_remark_column = false;
+    PageNumberPolicy page_number_policy = PageNumberPolicy::CurrentAndTotal;
+};
+
+// Application service resolves the same snapshot for all adapters and rejects
+// a stale data_version before output. The service publishes const copies.
+struct PrintModel {
+    std::shared_ptr<const RosterResult> roster;
+    std::shared_ptr<const PrintTemplate> print_template;
+};
+
+enum class ExportResult : std::uint8_t { Succeeded, Failed };
+struct ExportLogRecord {
+    ExportId export_id;
+    SnapshotId snapshot_id;
+    TemplateId template_id;
+    std::uint32_t template_version = 0;
+    std::string filter_summary;  // Redacted summary; no raw sensitive field values.
+    std::size_t record_count = 0;
+    std::string output_file_name;  // Basename or redacted path summary.
+    UtcTimestamp created_at;
+    UserId requested_by;
+    ExportResult result = ExportResult::Failed;
 };
 
 enum class ApiErrorCode : std::uint16_t {
@@ -321,6 +507,8 @@ enum class ApiErrorCode : std::uint16_t {
     BackupFailed,
     RestoreFailed,
     ExportFailed,
+    StaleSnapshot,
+    InvalidTemplate,
     InternalError,
 };
 
@@ -351,12 +539,18 @@ struct ImportPreviewRequest {
     std::string source_file_path;
     std::string worksheet_name;
     std::vector<ImportColumnBinding> column_bindings;
+    std::string profile_id;
+    std::uint32_t profile_version = 0;
+    std::uint32_t mapping_version = 0;
+    ImportStatusResolution status_resolution;
 };
 
 struct ConfirmImportRequest {
     ApiMeta meta;
     ImportBatchId batch_id;
     UserId confirmed_by;
+    ImportStatusResolution status_resolution;
+    std::uint32_t mapping_version = 0;  // Must match the checked preview.
 };
 
 struct CreatePersonRequest {
@@ -371,6 +565,13 @@ struct UpdatePersonRequest {
     UserId changed_by;
 };
 
+struct UpdateTagRequest {
+    ApiMeta meta;
+    TagRecord tag;
+    bool remove = false;
+    UserId changed_by;
+};
+
 struct SearchPeopleRequest {
     ApiMeta meta;
     std::string search_text;
@@ -380,14 +581,26 @@ struct SearchPeopleRequest {
 struct GenerateRosterRequest {
     ApiMeta meta;
     FilterSpec filter;
-    bool include_fixed_person_id = true;
 };
 
 struct ExportRosterRequest {
     ApiMeta meta;
-    FilterSpec filter;
+    SnapshotId snapshot_id;
     PrintTemplate print_template;
     std::string output_file_path;
+    UserId requested_by;
+};
+
+struct PreviewRosterRequest {
+    ApiMeta meta;
+    SnapshotId snapshot_id;
+    PrintTemplate print_template;  // Value copy of the chosen template version.
+};
+
+struct PrintRosterRequest {
+    ApiMeta meta;
+    SnapshotId snapshot_id;
+    PrintTemplate print_template;
     UserId requested_by;
 };
 
