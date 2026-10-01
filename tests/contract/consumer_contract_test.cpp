@@ -13,7 +13,7 @@ int main() {
     assert(status != nullptr && !status->required_for_import);
     assert(find_person_field(FieldId::RelativePhone)->sensitive);
     assert(!find_person_field(FieldId::PersonId)->printable_by_default);
-    assert(!find_person_field(FieldId::PersonCode)->mutable_after_create);
+    assert(!find_person_field(FieldId::PersonCode)->user_editable);
     assert(find_person_field("job_title") == nullptr);
     assert(find_person_field("tag_codes") == nullptr);
 

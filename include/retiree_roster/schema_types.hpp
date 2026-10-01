@@ -14,11 +14,13 @@
 namespace retiree_roster {
 namespace schema {
 
-using SchemaVersion = std::uint32_t;
-constexpr SchemaVersion kCurrentSchemaVersion = 2U;  // Draft revision, not a Gate freeze.
+using ContractVersion = std::uint32_t;
+using DatabaseSchemaVersion = std::uint32_t;  // Independent migration version; not assigned here.
+constexpr ContractVersion kCurrentContractVersion = 3U;  // Draft revision, not a Gate freeze.
 
 using PersonId = std::string;
 using ImportBatchId = std::string;
+using PreviewRevision = std::string;  // Opaque identity of a service-owned, checked preview.
 using TemplateId = std::string;
 using FilterId = std::string;
 using RequestId = std::string;
@@ -132,46 +134,48 @@ struct FieldSpec {
     FieldValueKind value_kind;
     bool required_for_import;
     bool sensitive;
-    bool mutable_after_create;
+    bool source_importable;
+    bool user_editable;
+    bool system_managed;
     bool printable_by_default;
 };
 
 inline const std::array<FieldSpec, 34>& person_field_specs() {
     static const std::array<FieldSpec, 34> kSpecs = {{
-        {FieldId::PersonId, "person_id", FieldValueKind::Identifier, false, false, false, false},
-        {FieldId::PersonCode, "person_code", FieldValueKind::Identifier, false, false, false, true},
-        {FieldId::EmployeeNo, "employee_no", FieldValueKind::Text, false, false, true, true},
-        {FieldId::FullName, "full_name", FieldValueKind::Text, true, false, true, true},
-        {FieldId::PinyinSortKey, "pinyin_sort_key", FieldValueKind::Text, false, false, true, false},
-        {FieldId::NationalId, "national_id", FieldValueKind::Text, false, true, true, false},
-        {FieldId::Sex, "sex", FieldValueKind::EnumCode, false, false, true, true},
-        {FieldId::Ethnicity, "ethnicity", FieldValueKind::Text, false, false, true, true},
-        {FieldId::BirthDate, "birth_date", FieldValueKind::Date, false, false, true, true},
-        {FieldId::OriginalOrganization, "original_organization", FieldValueKind::Text, false, false, true, true},
-        {FieldId::Phone, "phone", FieldValueKind::Text, false, true, true, false},
-        {FieldId::HomeAddress, "home_address", FieldValueKind::Text, false, true, true, false},
-        {FieldId::RetirementDate, "retirement_date", FieldValueKind::Date, false, false, true, true},
-        {FieldId::PersonnelCategory, "personnel_category", FieldValueKind::EnumCode, false, false, true, true},
-        {FieldId::CadreRank, "cadre_rank", FieldValueKind::EnumCode, false, false, true, true},
-        {FieldId::ProfessionalTitle, "professional_title", FieldValueKind::Text, false, false, true, true},
-        {FieldId::PositionTitle, "position_title", FieldValueKind::Text, false, false, true, true},
-        {FieldId::Education, "education", FieldValueKind::Text, false, false, true, true},
-        {FieldId::Degree, "degree", FieldValueKind::Text, false, false, true, true},
-        {FieldId::WorkStartDate, "work_start_date", FieldValueKind::Date, false, false, true, true},
-        {FieldId::PartyBranch, "party_branch", FieldValueKind::Text, false, false, true, true},
-        {FieldId::PartyFullMemberDate, "party_full_member_date", FieldValueKind::Date, false, false, true, true},
-        {FieldId::NativePlace, "native_place", FieldValueKind::Text, false, false, true, true},
-        {FieldId::RelativePhone, "relative_phone", FieldValueKind::Text, false, true, true, false},
-        {FieldId::IdentityCategory, "identity_category", FieldValueKind::Text, false, false, true, true},
-        {FieldId::PoliticalAffiliation, "political_affiliation", FieldValueKind::EnumCode, false, false, true, true},
-        {FieldId::PartyJoinDate, "party_join_date", FieldValueKind::Date, false, false, true, true},
-        {FieldId::LifeStatus, "life_status", FieldValueKind::EnumCode, false, false, true, true},
-        {FieldId::DeathDate, "death_date", FieldValueKind::Date, false, false, true, false},
-        {FieldId::Remark, "remark", FieldValueKind::Text, false, false, true, false},
-        {FieldId::CreatedAt, "created_at", FieldValueKind::Timestamp, false, false, false, false},
-        {FieldId::UpdatedAt, "updated_at", FieldValueKind::Timestamp, false, false, false, false},
-        {FieldId::ImportBatchId, "import_batch_id", FieldValueKind::Identifier, false, false, false, false},
-        {FieldId::LastModifiedBy, "last_modified_by", FieldValueKind::Identifier, false, false, true, false},
+        {FieldId::PersonId, "person_id", FieldValueKind::Identifier, false, false, false, false, true, false},
+        {FieldId::PersonCode, "person_code", FieldValueKind::Identifier, false, false, false, false, true, true},
+        {FieldId::EmployeeNo, "employee_no", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::FullName, "full_name", FieldValueKind::Text, true, false, true, true, false, true},
+        {FieldId::PinyinSortKey, "pinyin_sort_key", FieldValueKind::Text, false, false, false, true, false, false},
+        {FieldId::NationalId, "national_id", FieldValueKind::Text, false, true, true, true, false, false},
+        {FieldId::Sex, "sex", FieldValueKind::EnumCode, false, false, true, true, false, true},
+        {FieldId::Ethnicity, "ethnicity", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::BirthDate, "birth_date", FieldValueKind::Date, false, false, true, true, false, true},
+        {FieldId::OriginalOrganization, "original_organization", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::Phone, "phone", FieldValueKind::Text, false, true, true, true, false, false},
+        {FieldId::HomeAddress, "home_address", FieldValueKind::Text, false, true, true, true, false, false},
+        {FieldId::RetirementDate, "retirement_date", FieldValueKind::Date, false, false, true, true, false, true},
+        {FieldId::PersonnelCategory, "personnel_category", FieldValueKind::EnumCode, false, false, true, true, false, true},
+        {FieldId::CadreRank, "cadre_rank", FieldValueKind::EnumCode, false, false, true, true, false, true},
+        {FieldId::ProfessionalTitle, "professional_title", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::PositionTitle, "position_title", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::Education, "education", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::Degree, "degree", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::WorkStartDate, "work_start_date", FieldValueKind::Date, false, false, true, true, false, true},
+        {FieldId::PartyBranch, "party_branch", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::PartyFullMemberDate, "party_full_member_date", FieldValueKind::Date, false, false, true, true, false, true},
+        {FieldId::NativePlace, "native_place", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::RelativePhone, "relative_phone", FieldValueKind::Text, false, true, true, true, false, false},
+        {FieldId::IdentityCategory, "identity_category", FieldValueKind::Text, false, false, true, true, false, true},
+        {FieldId::PoliticalAffiliation, "political_affiliation", FieldValueKind::EnumCode, false, false, true, true, false, true},
+        {FieldId::PartyJoinDate, "party_join_date", FieldValueKind::Date, false, false, true, true, false, true},
+        {FieldId::LifeStatus, "life_status", FieldValueKind::EnumCode, false, false, true, true, false, true},
+        {FieldId::DeathDate, "death_date", FieldValueKind::Date, false, false, true, true, false, false},
+        {FieldId::Remark, "remark", FieldValueKind::Text, false, false, true, true, false, false},
+        {FieldId::CreatedAt, "created_at", FieldValueKind::Timestamp, false, false, false, false, true, false},
+        {FieldId::UpdatedAt, "updated_at", FieldValueKind::Timestamp, false, false, false, false, true, false},
+        {FieldId::ImportBatchId, "import_batch_id", FieldValueKind::Identifier, false, false, false, false, true, false},
+        {FieldId::LastModifiedBy, "last_modified_by", FieldValueKind::Identifier, false, false, false, false, true, false},
     }};
     return kSpecs;
 }
@@ -196,9 +200,72 @@ inline const FieldSpec* find_person_field(FieldId id) {
     return nullptr;
 }
 
-inline bool is_current_schema(SchemaVersion version) {
-    return version == kCurrentSchemaVersion;
+inline bool is_current_contract(ContractVersion version) {
+    return version == kCurrentContractVersion;
 }
+
+enum class ImportFieldId : std::uint8_t {
+    Unspecified = 255,
+    EmployeeNo = static_cast<std::uint8_t>(FieldId::EmployeeNo),
+    FullName = static_cast<std::uint8_t>(FieldId::FullName),
+    NationalId = static_cast<std::uint8_t>(FieldId::NationalId),
+    Sex = static_cast<std::uint8_t>(FieldId::Sex),
+    Ethnicity = static_cast<std::uint8_t>(FieldId::Ethnicity),
+    BirthDate = static_cast<std::uint8_t>(FieldId::BirthDate),
+    OriginalOrganization = static_cast<std::uint8_t>(FieldId::OriginalOrganization),
+    Phone = static_cast<std::uint8_t>(FieldId::Phone),
+    HomeAddress = static_cast<std::uint8_t>(FieldId::HomeAddress),
+    RetirementDate = static_cast<std::uint8_t>(FieldId::RetirementDate),
+    PersonnelCategory = static_cast<std::uint8_t>(FieldId::PersonnelCategory),
+    CadreRank = static_cast<std::uint8_t>(FieldId::CadreRank),
+    ProfessionalTitle = static_cast<std::uint8_t>(FieldId::ProfessionalTitle),
+    PositionTitle = static_cast<std::uint8_t>(FieldId::PositionTitle),
+    Education = static_cast<std::uint8_t>(FieldId::Education),
+    Degree = static_cast<std::uint8_t>(FieldId::Degree),
+    WorkStartDate = static_cast<std::uint8_t>(FieldId::WorkStartDate),
+    PartyBranch = static_cast<std::uint8_t>(FieldId::PartyBranch),
+    PartyFullMemberDate = static_cast<std::uint8_t>(FieldId::PartyFullMemberDate),
+    NativePlace = static_cast<std::uint8_t>(FieldId::NativePlace),
+    RelativePhone = static_cast<std::uint8_t>(FieldId::RelativePhone),
+    IdentityCategory = static_cast<std::uint8_t>(FieldId::IdentityCategory),
+    PoliticalAffiliation = static_cast<std::uint8_t>(FieldId::PoliticalAffiliation),
+    PartyJoinDate = static_cast<std::uint8_t>(FieldId::PartyJoinDate),
+    LifeStatus = static_cast<std::uint8_t>(FieldId::LifeStatus),
+    DeathDate = static_cast<std::uint8_t>(FieldId::DeathDate),
+    Remark = static_cast<std::uint8_t>(FieldId::Remark),
+};
+
+enum class EditableFieldId : std::uint8_t {
+    Unspecified = 255,
+    EmployeeNo = static_cast<std::uint8_t>(FieldId::EmployeeNo),
+    FullName = static_cast<std::uint8_t>(FieldId::FullName),
+    PinyinSortKey = static_cast<std::uint8_t>(FieldId::PinyinSortKey),
+    NationalId = static_cast<std::uint8_t>(FieldId::NationalId),
+    Sex = static_cast<std::uint8_t>(FieldId::Sex),
+    Ethnicity = static_cast<std::uint8_t>(FieldId::Ethnicity),
+    BirthDate = static_cast<std::uint8_t>(FieldId::BirthDate),
+    OriginalOrganization = static_cast<std::uint8_t>(FieldId::OriginalOrganization),
+    Phone = static_cast<std::uint8_t>(FieldId::Phone),
+    HomeAddress = static_cast<std::uint8_t>(FieldId::HomeAddress),
+    RetirementDate = static_cast<std::uint8_t>(FieldId::RetirementDate),
+    PersonnelCategory = static_cast<std::uint8_t>(FieldId::PersonnelCategory),
+    CadreRank = static_cast<std::uint8_t>(FieldId::CadreRank),
+    ProfessionalTitle = static_cast<std::uint8_t>(FieldId::ProfessionalTitle),
+    PositionTitle = static_cast<std::uint8_t>(FieldId::PositionTitle),
+    Education = static_cast<std::uint8_t>(FieldId::Education),
+    Degree = static_cast<std::uint8_t>(FieldId::Degree),
+    WorkStartDate = static_cast<std::uint8_t>(FieldId::WorkStartDate),
+    PartyBranch = static_cast<std::uint8_t>(FieldId::PartyBranch),
+    PartyFullMemberDate = static_cast<std::uint8_t>(FieldId::PartyFullMemberDate),
+    NativePlace = static_cast<std::uint8_t>(FieldId::NativePlace),
+    RelativePhone = static_cast<std::uint8_t>(FieldId::RelativePhone),
+    IdentityCategory = static_cast<std::uint8_t>(FieldId::IdentityCategory),
+    PoliticalAffiliation = static_cast<std::uint8_t>(FieldId::PoliticalAffiliation),
+    PartyJoinDate = static_cast<std::uint8_t>(FieldId::PartyJoinDate),
+    LifeStatus = static_cast<std::uint8_t>(FieldId::LifeStatus),
+    DeathDate = static_cast<std::uint8_t>(FieldId::DeathDate),
+    Remark = static_cast<std::uint8_t>(FieldId::Remark),
+};
 
 struct AuditFields {
     UtcTimestamp created_at;
@@ -248,6 +315,48 @@ struct PersonRecord {
     AuditFields audit;
 };
 
+// Request input excludes IDs, the initially generated pinyin key, and audit fields.
+struct PersonCreateInput {
+    std::string employee_no;
+    std::string full_name;
+    std::string national_id;
+
+    std::string sex;
+    std::string ethnicity;
+    LocalDate birth_date;
+    std::string original_organization;
+    std::string phone;
+    std::string home_address;
+
+    LocalDate retirement_date;
+    std::string personnel_category;
+    std::string cadre_rank;
+    std::string professional_title;
+    std::string position_title;
+    std::string education;
+    std::string degree;
+    DateValue work_start_date;
+    std::string party_branch;
+    DateValue party_full_member_date;
+    std::string native_place;
+    std::string relative_phone;
+    std::string identity_category;
+
+    std::string political_affiliation;
+    LocalDate party_join_date;
+    LifeStatus life_status = LifeStatus::Unknown;
+    LocalDate death_date;
+
+    std::string remark;
+};
+
+struct TagMutation {
+    TagCode tag_code;
+    std::string tag_value;
+    std::int32_t applicable_year = 0;
+    bool remove = false;
+};
+
 struct TagRecord {
     PersonId person_id;
     TagCode tag_code;
@@ -260,10 +369,19 @@ struct TagRecord {
 // Explicitly models the difference between an empty value and an unchanged
 // value. It is the only permitted shape for partial person updates.
 struct FieldChange {
-    FieldId field;
+    EditableFieldId field = EditableFieldId::Unspecified;
     std::string value;
     bool clear_value = false;
     DateValue date_value;  // Date fields use this; text is not an implicit date parser.
+};
+
+inline bool is_valid_field_change(const FieldChange& change) {
+    const auto* spec = find_person_field(static_cast<FieldId>(change.field));
+    return spec != nullptr && spec->user_editable && !spec->system_managed;
+}
+
+struct PersonEditInput {
+    std::vector<FieldChange> changes;
 };
 
 enum class ImportColumnDisposition : std::uint8_t { PersonField, BatchRawOnly, Unsupported };
@@ -271,10 +389,21 @@ enum class ImportColumnDisposition : std::uint8_t { PersonField, BatchRawOnly, U
 struct ImportColumnBinding {
     std::size_t source_column_index = 0;
     std::string source_column_name;
-    FieldId target_field = FieldId::FullName;
+    ImportFieldId target_field = ImportFieldId::Unspecified;
     bool required = false;
     ImportColumnDisposition disposition = ImportColumnDisposition::Unsupported;
+    bool status_source_confirmed = false;  // Explicit mapping confirmation for a status column.
 };
+
+inline bool is_valid_import_binding(const ImportColumnBinding& binding) {
+    if (binding.disposition == ImportColumnDisposition::BatchRawOnly) {
+        return binding.target_field == ImportFieldId::Unspecified;
+    }
+    if (binding.disposition != ImportColumnDisposition::PersonField) { return false; }
+    const auto* spec = find_person_field(static_cast<FieldId>(binding.target_field));
+    return spec != nullptr && spec->source_importable && !spec->system_managed &&
+        (binding.target_field != ImportFieldId::LifeStatus || binding.status_source_confirmed);
+}
 
 enum class StatusSource : std::uint8_t { Unresolved, SourceColumn, ConfirmedBatchDefault, FrozenProfile, Mixed };
 
@@ -290,7 +419,7 @@ struct ImportProfile {
     std::size_t header_row_number = 0;
     std::vector<ImportColumnBinding> column_bindings;
     ImportStatusResolution status_resolution;
-    bool frozen = false;
+
 };
 
 enum class ImportErrorCode : std::uint8_t {
@@ -317,6 +446,8 @@ struct ImportIssue {
 
 struct ImportPreview {
     ImportBatchId batch_id;
+    PreviewRevision preview_revision;
+    std::string source_sha256;  // Computed by the service from the checked source content.
     std::string source_file_name;
     std::string worksheet_name;
     std::size_t source_record_count = 0;
@@ -343,6 +474,8 @@ struct ImportRawCell {
 
 struct ImportBatchRecord {
     ImportBatchId batch_id;
+    PreviewRevision preview_revision;
+    std::string source_sha256;
     std::string source_file_name;  // Basename only; no permanent sensitive absolute path.
     std::string worksheet_name;
     std::size_t source_record_count = 0;
@@ -453,6 +586,7 @@ enum class PageOrientation : std::uint8_t { Portrait, Landscape };
 enum class PageNumberPolicy : std::uint8_t { None, CurrentAndTotal };
 
 struct PageMargins {
+    // Draft UI suggestions; effective parameters require business/template validation.
     std::uint16_t left_tenth_mm = 150;
     std::uint16_t right_tenth_mm = 150;
     std::uint16_t top_tenth_mm = 150;
@@ -492,14 +626,14 @@ struct ExportLogRecord {
     std::uint32_t template_version = 0;
     std::string filter_summary;  // Redacted summary; no raw sensitive field values.
     std::size_t record_count = 0;
-    std::string output_file_name;  // Basename or redacted path summary.
+    std::string output_path;  // Real path in private local storage; redact display/public evidence.
     UtcTimestamp created_at;
     UserId requested_by;
     ExportResult result = ExportResult::Failed;
 };
 
 enum class ApiErrorCode : std::uint16_t {
-    SchemaVersionMismatch,
+    ContractVersionMismatch,
     ValidationFailed,
     NotFound,
     Conflict,
@@ -522,7 +656,7 @@ struct ApiError {
 };
 
 struct ApiMeta {
-    SchemaVersion schema_version = kCurrentSchemaVersion;
+    ContractVersion contract_version = kCurrentContractVersion;
     RequestId request_id;
 };
 
@@ -546,29 +680,30 @@ struct ImportPreviewRequest {
 };
 
 struct ConfirmImportRequest {
+    // Load the service-owned preview by both identities; never re-read caller semantics.
     ApiMeta meta;
     ImportBatchId batch_id;
+    PreviewRevision preview_revision;
     UserId confirmed_by;
-    ImportStatusResolution status_resolution;
-    std::uint32_t mapping_version = 0;  // Must match the checked preview.
 };
 
 struct CreatePersonRequest {
     ApiMeta meta;
-    PersonRecord person;
+    PersonCreateInput person;
+    UserId created_by;
 };
 
 struct UpdatePersonRequest {
     ApiMeta meta;
     PersonId person_id;
-    std::vector<FieldChange> changes;
+    PersonEditInput input;
     UserId changed_by;
 };
 
 struct UpdateTagRequest {
     ApiMeta meta;
-    TagRecord tag;
-    bool remove = false;
+    PersonId person_id;
+    TagMutation mutation;
     UserId changed_by;
 };
 

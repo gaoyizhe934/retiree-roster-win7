@@ -29,8 +29,10 @@
 
 非作者 reviewer：
 
-## Gate 结论（仅 R／授权者填写）
+## Gate 质量结论（仅非作者 R 填写）
 
-结论：待审；不得由作者代签。
+结论：待审；R 必须正式承担评审角色且不是该变更作者，作者不得切换身份自签。
+
+Git commit／push／创建 PR／merge 的授权由创建者／授权者另行给出，不代替 R 的质量结论。
 
 证据与 Gate 状态记录（docs/status/GATE_STATUS.md）：

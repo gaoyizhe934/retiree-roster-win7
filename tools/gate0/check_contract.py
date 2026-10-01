@@ -1,7 +1,9 @@
 """Reproducible, offline checks of the Gate 0 draft contract (not the product)."""
+import argparse
 import csv
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -20,6 +22,12 @@ BASELINES = {
     "reference/员工信息表11111.xlsx": "427727f5d8062e7cba699b35d9262fb594b717d3dd699f811cbb7475112cf5b6",
 }
 RESULTS = []
+
+
+class CheckFailure(RuntimeError):
+    def __init__(self, message, details):
+        super().__init__(message)
+        self.details = details
 
 
 def documentation_paths():
@@ -120,7 +128,19 @@ def obsolete_api_rejected():
         "person_care": "PersonRecord p; p.care.has_financial_difficulty = true;",
         "tag_as_person_field": "auto f = FieldId::TagCodes; (void)f;",
         "mutable_print_roster": "PrintModel m; m.roster->rows.clear();",
+        "confirm_status_change": "ConfirmImportRequest r; r.status_resolution = ImportStatusResolution{};",
+        "confirm_mapping_change": "ConfirmImportRequest r; r.mapping_version = 2;",
+        "create_system_id": "CreatePersonRequest r; r.person.person_id = \"forged\";",
+        "create_fixed_code": "CreatePersonRequest r; r.person.person_code = \"forged\";",
+        "create_audit": "CreatePersonRequest r; r.person.audit.created_at = \"forged\";",
+        "edit_system_id": "FieldChange c; c.field = EditableFieldId::PersonId;",
+        "tag_audit_time": "UpdateTagRequest r; r.mutation.updated_at = \"forged\";",
+        "tag_audit_operator": "UpdateTagRequest r; r.mutation.updated_by = \"forged\";",
+        "caller_freezes_profile": "ImportProfile p; p.frozen = true;",
+        "ambiguous_schema_version": "ApiMeta m; m.schema_version = 3;",
     }
+    for field in ("PersonId", "PersonCode", "CreatedAt", "UpdatedAt", "ImportBatchId", "LastModifiedBy", "PinyinSortKey"):
+        snippets["import_protected_" + field] = "ImportColumnBinding b; b.target_field = ImportFieldId::" + field + ";"
     control = OUTPUT / "syntax_control.cpp"
     control.write_text('#include "retiree_roster/schema_types.hpp"\nint main() { return 0; }\n', encoding="utf-8")
     syntax_command = [compiler, "-std=c++14", "-pedantic-errors", "-I", "include", "-fsyntax-only"]
@@ -175,42 +195,110 @@ def documentation_links():
     return {"files": len(paths), "local_links": count}
 
 
-def diff_whitespace():
-    result = git("diff", "--check")
+def diff_whitespace(base_ref=None):
+    base_ref = base_ref or os.environ.get("ROSTER_BASE_REF", "origin/main")
+    base = git("rev-parse", "--verify", "--end-of-options", base_ref + "^{commit}")
+    require(base.returncode == 0, "cannot resolve base ref: " + base_ref)
+    head = git("rev-parse", "--verify", "HEAD^{commit}")
+    require(head.returncode == 0, "cannot resolve HEAD")
+    base_sha, head_sha = base.stdout.strip(), head.stdout.strip()
+    merge = git("merge-base", base_sha, head_sha)
+    require(merge.returncode == 0, "base and HEAD have no merge base")
+    merge_sha = merge.stdout.strip()
+    details = {"base_ref": base_ref, "base_sha": base_sha, "head_sha": head_sha,
+               "merge_base_sha": merge_sha, "commands": []}
+    for kind, args in (
+        ("committed_pr", ("diff", "--check", merge_sha + "..." + head_sha)),
+        ("staged", ("diff", "--cached", "--check")),
+        ("worktree", ("diff", "--check")),
+    ):
+        result = git(*args)
+        details["commands"].append({"scope": kind, "command": ["git", *args],
+                                    "exit_code": result.returncode,
+                                    "stdout": result.stdout, "stderr": result.stderr})
+    if any(c["exit_code"] != 0 for c in details["commands"]):
+        raise CheckFailure("whitespace check failed; see commands and diagnostics", details)
+    return details
+
+
+def checker_regressions():
+    command = [sys.executable, "tests/contract/check_tool_regressions.py"]
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, encoding="utf-8", errors="replace")
     require(result.returncode == 0, result.stdout + result.stderr)
-    return {"exit_code": result.returncode}
+    return {"command": command, "exit_code": result.returncode, "result": result.stdout}
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--layer", choices=("all", "structure", "cpp14", "diff"), default="all")
+    parser.add_argument("--base-ref", help="PR base ref; defaults to ROSTER_BASE_REF or origin/main")
+    args = parser.parse_args()
+    RESULTS.clear()
     OUTPUT.mkdir(parents=True, exist_ok=True)
-    checks = [
+    structure_checks = [
         ("baseline_fingerprints", baseline_fingerprints), ("23_column_mapping", source_mapping),
+        ("R02_fixture_completeness", boundary_fixture),
+        ("ignore_and_attributes", ignore_and_attributes), ("documentation_links", documentation_links),
+        ("diff_whitespace", lambda: diff_whitespace(args.base_ref)),
+        ("checker_regressions", checker_regressions),
+    ]
+    cpp14_checks = [
         ("date_value_behavior", lambda: compile_and_run("tests/contract/date_value_test.cpp")),
         ("cpp14_consumer", lambda: compile_and_run("tests/contract/consumer_contract_test.cpp")),
-        ("obsolete_api_rejected", obsolete_api_rejected), ("R02_fixture_completeness", boundary_fixture),
-        ("ignore_and_attributes", ignore_and_attributes), ("documentation_links", documentation_links),
-        ("diff_whitespace", diff_whitespace),
+        ("preview_revision", lambda: compile_and_run("tests/contract/preview_revision_test.cpp")),
+        ("input_authority", lambda: compile_and_run("tests/contract/input_authority_test.cpp")),
+        ("obsolete_api_rejected", obsolete_api_rejected),
     ]
+    if args.layer == "all":
+        checks = structure_checks + cpp14_checks
+    elif args.layer == "structure":
+        checks = structure_checks
+    elif args.layer == "cpp14":
+        checks = cpp14_checks
+    else:
+        checks = [("diff_whitespace", lambda: diff_whitespace(args.base_ref))]
     for name, check in checks:
         try:
             details = check()
             RESULTS.append({"name": name, "passed": True, "details": details})
             print("PASS " + name)
         except Exception as error:
-            RESULTS.append({"name": name, "passed": False, "error": str(error)})
+            entry = {"name": name, "passed": False, "error": str(error)}
+            if isinstance(error, CheckFailure):
+                entry["details"] = error.details
+            RESULTS.append(entry)
             print("FAIL " + name + ": " + str(error))
     inputs = [ROOT / name for name in BASELINES]
     inputs.extend([ROOT / "include/retiree_roster/schema_types.hpp", Path(__file__)])
     inputs.extend(sorted((ROOT / "tests/contract").glob("*")))
     inputs.extend(documentation_paths())
     inputs.extend(ROOT / p for p in (".gitignore", ".gitattributes", ".github/pull_request_template.md"))
-    compiler = shutil.which("g++")
-    compiler_version = subprocess.run([compiler, "--version"], cwd=ROOT, capture_output=True,
-                                      encoding="utf-8", errors="replace") if compiler else None
+    compiler_information = {"status": "not_executed", "reason": "Python-only layer"}
+    if args.layer in ("all", "cpp14"):
+        compiler = shutil.which("g++")
+        if compiler:
+            try:
+                version = subprocess.run([compiler, "--version"], cwd=ROOT, capture_output=True,
+                                         encoding="utf-8", errors="replace")
+                compiler_information = {"status": "executed", "command": [compiler, "--version"],
+                                        "exit_code": version.returncode, "version": version.stdout,
+                                        "diagnostics": version.stderr}
+            except OSError as error:
+                compiler_information = {"status": "unavailable", "error": str(error)}
+        else:
+            compiler_information = {"status": "unavailable", "reason": "g++ not on PATH"}
     evidence = {
         "scope": "Gate 0 draft contract checks only; no product/Win7/Gate approval",
+        "layer": args.layer,
+        "invocation": ["python", "tools/gate0/check_contract.py", *sys.argv[1:]],
+        "unexecuted_layers": {
+            "all": ["formal_msvc_cmake", "win7"],
+            "structure": ["cpp14", "formal_msvc_cmake", "win7"],
+            "cpp14": ["structure", "formal_msvc_cmake", "win7"],
+            "diff": ["structure_except_diff", "cpp14", "formal_msvc_cmake", "win7"],
+        }[args.layer],
         "tools": {"python_version": sys.version,
-                  "compiler_version": compiler_version.stdout if compiler_version else "unavailable"},
+                  "compiler": compiler_information},
         "inputs": {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                    for p in inputs if p.is_file()},
         "checks": RESULTS,

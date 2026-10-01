@@ -16,7 +16,9 @@ Profile 需记录 ID、版本、表头行号、列索引／名称／处置、必
 
 LifeStatus 不要求源表一定有列，但新建／确认导入前必须解析成 Living 或 Deceased。初始为 Unknown，不自动勾选在世或去世。有有效源列时源列优先；缺失时需要维护员确认批次默认值，或已冻结 Profile 明确给出默认值。明确但非法的源值属于异常，不能被默认值掩盖。
 
-`ImportStatusResolution` 记录来源与回退默认值、确认标志；混合来源用 Mixed，同时保存 Profile／映射版本。有变更时重新预检；确认请求只能接受当前已检查版本，执行记录保留最终来源。
+`ImportStatusResolution` 记录来源与回退默认值、确认标志；混合来源用 Mixed，同时保存 Profile／映射版本。服务对完整预检语义生成不透明 preview_revision 并保管不可变的预检结果；ConfirmImportRequest 仅携带 batch_id、preview_revision、confirmed_by 与请求元信息，不再次接收状态、映射或重复处置。
+
+列绑定、mapping/profile version、状态解析、重复候选处置、源文件内容／工作表发生任一变化时，旧 revision 失效，必须重新预检并生成新 revision。source_sha256 由服务计算并记录；确认时加载已检查的数据副本，不能重读变动后的源文件再入库。服务须验证批次与 revision 对应且可确认，成功确认后同一 revision 不可重复入库。该约束是 D3 的实现验收，当前只有 DTO 与编译／结构测试。
 
 未解决重复候选、Unknown 状态、未知／Unsupported 列、缺少姓名、非法日期或枚举均阻断确认。重复候选不能按工号重复直接覆盖档案，初期禁止自动合并；具体候选识别与人工处置规则待 A/R 验证。
 
@@ -27,4 +29,6 @@ LifeStatus 不要求源表一定有列，但新建／确认导入前必须解析
 - 来源缺失状态的实际业务选择、重复候选的人工处置方式。
 - 23 列保留对照及无静默丢失证据；见[字段映射](02_字段映射与数据保留策略.md)。
 
-`ImportProfile::frozen` 只能由服务加载已批准的配置设置，不能由 UI 或任意调用方自称已冻结。当前 DTO 仅表达模型；服务校验留给 D3。
+ImportProfile 不携带可写的 frozen 标志。冻结状态及批准证据来自配置仓储／审批记录，服务按 profile_id 与 version 查询；UI 请求中的标识不是批准证明。当前没有已冻结 Profile；配置仓储校验留给 D3。
+
+ImportColumnBinding 使用只含可导入字段的 ImportFieldId；系统 ID、固定编号、审计字段和拼音键没有可选枚举项。共享 is_valid_import_binding 再校验能力元数据，拒绝强制类型转换伪造的系统字段值。LifeStatus 源列必须显式确认其映射（status_source_confirmed），随后仍须通过状态值解析；不得把任意源列偷偷绑定为状态。服务负责调用该校验，用户布尔值不能替代预检证据。
