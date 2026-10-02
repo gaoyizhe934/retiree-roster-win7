@@ -1,0 +1,98 @@
+{
+  "base_main": "567d9cd32befc2b8aa7ae99487f8b6d2170f1436",
+  "contract_candidate": "e8ad944e7c9c8df77c7c5fd883c4459a75270e92",
+  "pr2_review_head": "f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4",
+  "contract_version": 4,
+  "checked_input_sha256": {
+    "docs/D1B/生成/设计正文.md": "9727667915292140275ddbf17bc444cdb0004335c819da62a0ae965b607ea10d",
+    "docs/D1B/生成/设计数据.json": "16e84c303193274dbba8a3a07a8dae1302ef0cb73d4f36d8c77978854862888f",
+    "docs/D1B/生成/build_design.py": "7516dcaca0b13a0c725373cecce1775c463ab8d08660fa527d8d293ad9089c1d",
+    "docs/D1B/生成/test_build_design.py": "07f87dc7b2127bc2bcaf1e6ff1395a4e87ec48d86c4eb43b3e3df5283b811c38",
+    "docs/D1B/README.md": "c0801cb9a9e0b982c5ffff5632b1355be3ef2e424764d1e0a85e4f182f144a13",
+    "docs/D1B/D1B_交付与审核记录.md": "88871c07a94802541932cd45b141e785155777169f3a4b9c65b461713fd252f6",
+    "docs/D1B/D1B_评审修改报告.md": "7e9e07f9cf4a96e76c6d46d0b9a0c0b72b256d6989df8c79ab961d55265dd9ca",
+    "include/retiree_roster/schema_types.hpp": "73217a0db2469c4349c4b54bb97fd1d3ea88f01ca82285027b95d10bf3bf7161"
+  },
+  "head_sha": null,
+  "merge_base_sha": "567d9cd32befc2b8aa7ae99487f8b6d2170f1436",
+  "review_head_source": "PR #3 当前head及提交后发布快照",
+  "validation_subject": "当前CV4设计源及产物指纹；Git审查头由PR与提交后复核快照固定，不在生成物内追写自身SHA",
+  "checks": [
+    {
+      "check": "MD/HTML全部标题一致",
+      "pass": true,
+      "detail": "43个标题同序同文"
+    },
+    {
+      "check": "九章目录全部可定位",
+      "pass": true,
+      "detail": "九个正文主章节"
+    },
+    {
+      "check": "离线资源",
+      "pass": true,
+      "detail": "无外部JS/CSS/图片/iframe；基线资料链接需联网，内容无需联网"
+    },
+    {
+      "check": "表格与SVG完整",
+      "pass": true,
+      "detail": "38张表与1张阶段SVG，完整Mermaid图源可展开"
+    },
+    {
+      "check": "34字段与Tag完整显示",
+      "pass": true,
+      "detail": "全部字段能力、日期组件、独立Tag控件"
+    },
+    {
+      "check": "Q/RV/T完整",
+      "pass": true,
+      "detail": "13对接项、9复核脚本、3模板"
+    },
+    {
+      "check": "文档本地链接有效",
+      "pass": true,
+      "detail": "生成稿链接按输出目录解析；HTML基线链接固定到main提交"
+    },
+    {
+      "check": "无未替换占位符",
+      "pass": true,
+      "detail": "控件/字段/Tab/模板/静态检查均已生成"
+    },
+    {
+      "check": "公共材料无私有绝对路径",
+      "pass": true,
+      "detail": "README、正文、HTML、交接、修改报告及JSON证据全量扫描；HTTPS不误判为盘符"
+    },
+    {
+      "check": "公共材料无真实敏感值",
+      "pass": true,
+      "detail": "无完整证号或大陆手机号；没有导入人员原值"
+    },
+    {
+      "check": "未虚报功能/Gate",
+      "pass": true,
+      "detail": "仅作者静态证据，非产品兼容验收"
+    },
+    {
+      "check": "三模板全值同步",
+      "pass": true,
+      "detail": "MD/HTML由同一JSON模板源渲染"
+    },
+    {
+      "check": "长表阅读与键盘横移",
+      "pass": true,
+      "detail": "控件表有明确列宽，滚动区可键盘聚焦；打印恢复100%宽度"
+    },
+    {
+      "check": "正式设计无内部技能术语",
+      "pass": true,
+      "detail": "设计与修订日期分离"
+    }
+  ],
+  "commands": [
+    "python docs/D1B/生成/build_design.py",
+    "python docs/D1B/生成/build_design.py --check",
+    "python docs/D1B/生成/test_build_design.py"
+  ],
+  "scope": "MD/HTML及公共证据结构，非产品功能测试；HTML目视记录见审核记录"
+}

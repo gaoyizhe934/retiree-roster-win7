@@ -1,0 +1,95 @@
+{
+  "scope": "当前生成器的故意损坏输入反例，非C++/产品测试",
+  "checks": [
+    {
+      "check": "反例前完整输入通过",
+      "pass": true,
+      "detail": "先验证所有静态检查通过，避免因原输入失败产生假阳性"
+    },
+    {
+      "check": "反例：ImportFieldId显式映射完整",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：EditableFieldId显式映射完整",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：CV4版本与基线身份",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：FieldChange日期payload",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：FieldChange文本枚举payload",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：clear规范Unknown",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：RosterResult没有可写人数",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：YearCount空启用拒绝",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：YearCount负值拒绝",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：Confirm源身份与checked copy",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：FullName禁止UI清空",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：既有状态日期单入口",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：筛选白名单排除系统敏感",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：按类型限定Comparison",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：Unknown日期UI空白",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：未闭环报告默认禁用",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：搜索语义候选待确认",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    }
+  ]
+}
