@@ -4,7 +4,7 @@
 
 | Gate | 阶段 | 当前状态 | 正式结论／签认人 | 证据 |
 | --- | --- | --- | --- | --- |
-| 0 | D1 基线冻结 | 未通过／待复核 | 未提供 | [稳定化交接](STABILIZATION_REVIEW.md) |
+| 0 | D1 基线冻结 | 未通过／待剩余基线闭环 | 未提供 | [稳定化交接](STABILIZATION_REVIEW.md) |
 | 1 | D2 工程骨架与接口 | 未进入 | 未提供 | 待 CMake／XMake 与 Win7 启动证据 |
 | 2 | D3 导入与维护 | 未进入 | 未提供 | 待事务、映射、状态和异常回归 |
 | 3 | D4 规则与筛选 | 未进入 | 未提供 | 待规则引擎及名单一致性证据 |
@@ -14,6 +14,12 @@
 
 ## 当前契约与进入条件
 
-公共契约：ContractVersion 3（Draft）；D1 基线待批，D2 接口待冻结，DatabaseSchemaVersion 独立且尚未分配。导入 Profile 未冻结，四份 ADR 均 Proposed；OD-0001 只记录已明确的分支命名指令，不批准业务契约。D1B #1 的远程状态必须在发布前再次核实，本轮未修改或合并该 PR。
+公共契约：ContractVersion 4（Draft）；D1 基线待批，D2 接口待冻结，DatabaseSchemaVersion 独立且尚未分配。导入 Profile 未冻结，四份 ADR 均 Proposed；OD-0001 只记录已明确的分支命名指令，不批准业务契约。D1B 当前唯一有效 PR 为 #3，旧 #1 已关闭；该引用依据创建者最新指令及 2026-10-02 远端核对，不在本轮改动 D1B。
 
-Gate 0 的缺口：A 字段与两样表／重复规则确认、B 在新基线合入后完成 #1 返工、C 的 VS2017/v141_xp 与两台 Win7 RTM 基线、R 的非作者审查、甲方编号／状态／模板参数确认、固定依赖实际源码及许可证完整核对。只有正式结论及证据齐备才进入 D2。
+Gate 0 的缺口：A 字段与两样表／重复规则确认、B 在新基线合入后完成 #3 返工、C 的 VS2017/v141_xp 与两台 Win7 RTM 基线、R 的非作者审查、甲方编号／状态／模板参数确认、固定依赖实际源码及许可证完整核对。只有正式结论及证据齐备才进入 D2。
+
+## PR #2 审查状态（独立于 Gate）
+
+2026-10-02，[非作者 R 的 Conversation 意见](https://github.com/gaoyizhe934/retiree-roster-win7/pull/2#issuecomment-5943240204)针对 279a204 确认未发现 Bug／Blocker、可继续候选复核，登记 Risk R01–R05。作者本轮加固 R01／R03／R04／R05，R02 形成 D3 验收清单；本地新候选仍待 R 返工复核。GitHub Formal Review 数量当日核对为 0，Conversation 意见不等于 APPROVE，也不签认新候选。
+
+C 正式工具链与 R 新候选 Review 的合作材料见[复核交接](GATE0_REVIEW_HANDOFF.md)。尚未发布本轮新 HEAD，正式非作者复核未提交；本表只登记状态，未改变 R 的 Gate 结论。PR #2 候选通过也不等于 Gate 0 通过。

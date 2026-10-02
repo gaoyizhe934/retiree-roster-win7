@@ -44,5 +44,19 @@ int main() {
     assert(is_valid_import_binding(status));
     FieldChange pinyin;
     pinyin.field = EditableFieldId::PinyinSortKey;
+    pinyin.value = "synthetic-pinyin";
     assert(is_valid_field_change(pinyin));
+    FieldId converted;
+    assert(try_to_person_field(pinyin.field, &converted) && converted == FieldId::PinyinSortKey);
+    // Every recognized input value, including explicit casts, must stay in the allowlist.
+    for (unsigned value = 0; value <= 255; ++value) {
+        if (try_to_person_field(static_cast<ImportFieldId>(value), &converted)) {
+            const auto* spec = find_person_field(converted);
+            assert(spec->source_importable && !spec->system_managed);
+        }
+        if (try_to_person_field(static_cast<EditableFieldId>(value), &converted)) {
+            const auto* spec = find_person_field(converted);
+            assert(spec->user_editable && !spec->system_managed);
+        }
+    }
 }

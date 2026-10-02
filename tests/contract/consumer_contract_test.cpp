@@ -38,6 +38,18 @@ int main() {
     chongyang.age.minimum = 90;
     chongyang.tag_match = MatchMode::Any;
     chongyang.tags.push_back({"condolence", "received", 2026});
+    assert(is_valid_year_count_condition(chongyang.age));
+    assert(is_valid_year_count_condition(chongyang.party_seniority));
+
+    RosterResult result;
+    assert(result.total_count() == 0);
+    result.rows.resize(37);
+    assert(result.total_count() == 37);
+    result.rows.pop_back();
+    assert(result.total_count() == 36);
+    result.rows.clear();
+    const RosterResult& read_only = result;
+    assert(read_only.total_count() == 0);
 
     PrintTemplate layout;
     TemplateColumn age;

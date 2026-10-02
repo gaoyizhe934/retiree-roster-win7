@@ -16,7 +16,7 @@ namespace schema {
 
 using ContractVersion = std::uint32_t;
 using DatabaseSchemaVersion = std::uint32_t;  // Independent migration version; not assigned here.
-constexpr ContractVersion kCurrentContractVersion = 3U;  // Draft revision, not a Gate freeze.
+constexpr ContractVersion kCurrentContractVersion = 4U;  // Draft revision, not a Gate freeze.
 
 using PersonId = std::string;
 using ImportBatchId = std::string;
@@ -206,66 +206,140 @@ inline bool is_current_contract(ContractVersion version) {
 
 enum class ImportFieldId : std::uint8_t {
     Unspecified = 255,
-    EmployeeNo = static_cast<std::uint8_t>(FieldId::EmployeeNo),
-    FullName = static_cast<std::uint8_t>(FieldId::FullName),
-    NationalId = static_cast<std::uint8_t>(FieldId::NationalId),
-    Sex = static_cast<std::uint8_t>(FieldId::Sex),
-    Ethnicity = static_cast<std::uint8_t>(FieldId::Ethnicity),
-    BirthDate = static_cast<std::uint8_t>(FieldId::BirthDate),
-    OriginalOrganization = static_cast<std::uint8_t>(FieldId::OriginalOrganization),
-    Phone = static_cast<std::uint8_t>(FieldId::Phone),
-    HomeAddress = static_cast<std::uint8_t>(FieldId::HomeAddress),
-    RetirementDate = static_cast<std::uint8_t>(FieldId::RetirementDate),
-    PersonnelCategory = static_cast<std::uint8_t>(FieldId::PersonnelCategory),
-    CadreRank = static_cast<std::uint8_t>(FieldId::CadreRank),
-    ProfessionalTitle = static_cast<std::uint8_t>(FieldId::ProfessionalTitle),
-    PositionTitle = static_cast<std::uint8_t>(FieldId::PositionTitle),
-    Education = static_cast<std::uint8_t>(FieldId::Education),
-    Degree = static_cast<std::uint8_t>(FieldId::Degree),
-    WorkStartDate = static_cast<std::uint8_t>(FieldId::WorkStartDate),
-    PartyBranch = static_cast<std::uint8_t>(FieldId::PartyBranch),
-    PartyFullMemberDate = static_cast<std::uint8_t>(FieldId::PartyFullMemberDate),
-    NativePlace = static_cast<std::uint8_t>(FieldId::NativePlace),
-    RelativePhone = static_cast<std::uint8_t>(FieldId::RelativePhone),
-    IdentityCategory = static_cast<std::uint8_t>(FieldId::IdentityCategory),
-    PoliticalAffiliation = static_cast<std::uint8_t>(FieldId::PoliticalAffiliation),
-    PartyJoinDate = static_cast<std::uint8_t>(FieldId::PartyJoinDate),
-    LifeStatus = static_cast<std::uint8_t>(FieldId::LifeStatus),
-    DeathDate = static_cast<std::uint8_t>(FieldId::DeathDate),
-    Remark = static_cast<std::uint8_t>(FieldId::Remark),
+    EmployeeNo = 64,
+    FullName,
+    NationalId,
+    Sex,
+    Ethnicity,
+    BirthDate,
+    OriginalOrganization,
+    Phone,
+    HomeAddress,
+    RetirementDate,
+    PersonnelCategory,
+    CadreRank,
+    ProfessionalTitle,
+    PositionTitle,
+    Education,
+    Degree,
+    WorkStartDate,
+    PartyBranch,
+    PartyFullMemberDate,
+    NativePlace,
+    RelativePhone,
+    IdentityCategory,
+    PoliticalAffiliation,
+    PartyJoinDate,
+    LifeStatus,
+    DeathDate,
+    Remark,
 };
 
 enum class EditableFieldId : std::uint8_t {
     Unspecified = 255,
-    EmployeeNo = static_cast<std::uint8_t>(FieldId::EmployeeNo),
-    FullName = static_cast<std::uint8_t>(FieldId::FullName),
-    PinyinSortKey = static_cast<std::uint8_t>(FieldId::PinyinSortKey),
-    NationalId = static_cast<std::uint8_t>(FieldId::NationalId),
-    Sex = static_cast<std::uint8_t>(FieldId::Sex),
-    Ethnicity = static_cast<std::uint8_t>(FieldId::Ethnicity),
-    BirthDate = static_cast<std::uint8_t>(FieldId::BirthDate),
-    OriginalOrganization = static_cast<std::uint8_t>(FieldId::OriginalOrganization),
-    Phone = static_cast<std::uint8_t>(FieldId::Phone),
-    HomeAddress = static_cast<std::uint8_t>(FieldId::HomeAddress),
-    RetirementDate = static_cast<std::uint8_t>(FieldId::RetirementDate),
-    PersonnelCategory = static_cast<std::uint8_t>(FieldId::PersonnelCategory),
-    CadreRank = static_cast<std::uint8_t>(FieldId::CadreRank),
-    ProfessionalTitle = static_cast<std::uint8_t>(FieldId::ProfessionalTitle),
-    PositionTitle = static_cast<std::uint8_t>(FieldId::PositionTitle),
-    Education = static_cast<std::uint8_t>(FieldId::Education),
-    Degree = static_cast<std::uint8_t>(FieldId::Degree),
-    WorkStartDate = static_cast<std::uint8_t>(FieldId::WorkStartDate),
-    PartyBranch = static_cast<std::uint8_t>(FieldId::PartyBranch),
-    PartyFullMemberDate = static_cast<std::uint8_t>(FieldId::PartyFullMemberDate),
-    NativePlace = static_cast<std::uint8_t>(FieldId::NativePlace),
-    RelativePhone = static_cast<std::uint8_t>(FieldId::RelativePhone),
-    IdentityCategory = static_cast<std::uint8_t>(FieldId::IdentityCategory),
-    PoliticalAffiliation = static_cast<std::uint8_t>(FieldId::PoliticalAffiliation),
-    PartyJoinDate = static_cast<std::uint8_t>(FieldId::PartyJoinDate),
-    LifeStatus = static_cast<std::uint8_t>(FieldId::LifeStatus),
-    DeathDate = static_cast<std::uint8_t>(FieldId::DeathDate),
-    Remark = static_cast<std::uint8_t>(FieldId::Remark),
+    EmployeeNo = 128,
+    FullName,
+    PinyinSortKey,
+    NationalId,
+    Sex,
+    Ethnicity,
+    BirthDate,
+    OriginalOrganization,
+    Phone,
+    HomeAddress,
+    RetirementDate,
+    PersonnelCategory,
+    CadreRank,
+    ProfessionalTitle,
+    PositionTitle,
+    Education,
+    Degree,
+    WorkStartDate,
+    PartyBranch,
+    PartyFullMemberDate,
+    NativePlace,
+    RelativePhone,
+    IdentityCategory,
+    PoliticalAffiliation,
+    PartyJoinDate,
+    LifeStatus,
+    DeathDate,
+    Remark,
 };
+
+// Domain-local values are not PersonFieldId identities or persisted field keys.
+// Only these named mappings may cross the import/edit/person interfaces.
+
+inline bool try_to_person_field(ImportFieldId field, FieldId* out) {
+    if (out == nullptr) { return false; }
+    switch (field) {
+        case ImportFieldId::EmployeeNo: *out = FieldId::EmployeeNo; return true;
+        case ImportFieldId::FullName: *out = FieldId::FullName; return true;
+        case ImportFieldId::NationalId: *out = FieldId::NationalId; return true;
+        case ImportFieldId::Sex: *out = FieldId::Sex; return true;
+        case ImportFieldId::Ethnicity: *out = FieldId::Ethnicity; return true;
+        case ImportFieldId::BirthDate: *out = FieldId::BirthDate; return true;
+        case ImportFieldId::OriginalOrganization: *out = FieldId::OriginalOrganization; return true;
+        case ImportFieldId::Phone: *out = FieldId::Phone; return true;
+        case ImportFieldId::HomeAddress: *out = FieldId::HomeAddress; return true;
+        case ImportFieldId::RetirementDate: *out = FieldId::RetirementDate; return true;
+        case ImportFieldId::PersonnelCategory: *out = FieldId::PersonnelCategory; return true;
+        case ImportFieldId::CadreRank: *out = FieldId::CadreRank; return true;
+        case ImportFieldId::ProfessionalTitle: *out = FieldId::ProfessionalTitle; return true;
+        case ImportFieldId::PositionTitle: *out = FieldId::PositionTitle; return true;
+        case ImportFieldId::Education: *out = FieldId::Education; return true;
+        case ImportFieldId::Degree: *out = FieldId::Degree; return true;
+        case ImportFieldId::WorkStartDate: *out = FieldId::WorkStartDate; return true;
+        case ImportFieldId::PartyBranch: *out = FieldId::PartyBranch; return true;
+        case ImportFieldId::PartyFullMemberDate: *out = FieldId::PartyFullMemberDate; return true;
+        case ImportFieldId::NativePlace: *out = FieldId::NativePlace; return true;
+        case ImportFieldId::RelativePhone: *out = FieldId::RelativePhone; return true;
+        case ImportFieldId::IdentityCategory: *out = FieldId::IdentityCategory; return true;
+        case ImportFieldId::PoliticalAffiliation: *out = FieldId::PoliticalAffiliation; return true;
+        case ImportFieldId::PartyJoinDate: *out = FieldId::PartyJoinDate; return true;
+        case ImportFieldId::LifeStatus: *out = FieldId::LifeStatus; return true;
+        case ImportFieldId::DeathDate: *out = FieldId::DeathDate; return true;
+        case ImportFieldId::Remark: *out = FieldId::Remark; return true;
+        default: return false;  // Unspecified and forged values leave output unchanged.
+    }
+}
+
+
+inline bool try_to_person_field(EditableFieldId field, FieldId* out) {
+    if (out == nullptr) { return false; }
+    switch (field) {
+        case EditableFieldId::EmployeeNo: *out = FieldId::EmployeeNo; return true;
+        case EditableFieldId::FullName: *out = FieldId::FullName; return true;
+        case EditableFieldId::PinyinSortKey: *out = FieldId::PinyinSortKey; return true;
+        case EditableFieldId::NationalId: *out = FieldId::NationalId; return true;
+        case EditableFieldId::Sex: *out = FieldId::Sex; return true;
+        case EditableFieldId::Ethnicity: *out = FieldId::Ethnicity; return true;
+        case EditableFieldId::BirthDate: *out = FieldId::BirthDate; return true;
+        case EditableFieldId::OriginalOrganization: *out = FieldId::OriginalOrganization; return true;
+        case EditableFieldId::Phone: *out = FieldId::Phone; return true;
+        case EditableFieldId::HomeAddress: *out = FieldId::HomeAddress; return true;
+        case EditableFieldId::RetirementDate: *out = FieldId::RetirementDate; return true;
+        case EditableFieldId::PersonnelCategory: *out = FieldId::PersonnelCategory; return true;
+        case EditableFieldId::CadreRank: *out = FieldId::CadreRank; return true;
+        case EditableFieldId::ProfessionalTitle: *out = FieldId::ProfessionalTitle; return true;
+        case EditableFieldId::PositionTitle: *out = FieldId::PositionTitle; return true;
+        case EditableFieldId::Education: *out = FieldId::Education; return true;
+        case EditableFieldId::Degree: *out = FieldId::Degree; return true;
+        case EditableFieldId::WorkStartDate: *out = FieldId::WorkStartDate; return true;
+        case EditableFieldId::PartyBranch: *out = FieldId::PartyBranch; return true;
+        case EditableFieldId::PartyFullMemberDate: *out = FieldId::PartyFullMemberDate; return true;
+        case EditableFieldId::NativePlace: *out = FieldId::NativePlace; return true;
+        case EditableFieldId::RelativePhone: *out = FieldId::RelativePhone; return true;
+        case EditableFieldId::IdentityCategory: *out = FieldId::IdentityCategory; return true;
+        case EditableFieldId::PoliticalAffiliation: *out = FieldId::PoliticalAffiliation; return true;
+        case EditableFieldId::PartyJoinDate: *out = FieldId::PartyJoinDate; return true;
+        case EditableFieldId::LifeStatus: *out = FieldId::LifeStatus; return true;
+        case EditableFieldId::DeathDate: *out = FieldId::DeathDate; return true;
+        case EditableFieldId::Remark: *out = FieldId::Remark; return true;
+        default: return false;  // Unspecified and forged values leave output unchanged.
+    }
+}
+
 
 struct AuditFields {
     UtcTimestamp created_at;
@@ -376,8 +450,25 @@ struct FieldChange {
 };
 
 inline bool is_valid_field_change(const FieldChange& change) {
-    const auto* spec = find_person_field(static_cast<FieldId>(change.field));
-    return spec != nullptr && spec->user_editable && !spec->system_managed;
+    FieldId field;
+    if (!try_to_person_field(change.field, &field)) { return false; }
+    const auto* spec = find_person_field(field);
+    if (spec == nullptr || !spec->user_editable || spec->system_managed) { return false; }
+    const bool empty_date = change.date_value.precision == DatePrecision::Unknown &&
+        change.date_value.is_valid();
+    // Identifier/Timestamp cannot become editable, even with a future metadata mistake.
+    if (spec->value_kind == FieldValueKind::Identifier ||
+        spec->value_kind == FieldValueKind::Timestamp) { return false; }
+    if (change.clear_value) { return change.value.empty() && empty_date; }
+    switch (spec->value_kind) {
+        case FieldValueKind::Date:
+            return change.value.empty() && change.date_value.is_known();
+        case FieldValueKind::Text:
+        case FieldValueKind::EnumCode:
+            return empty_date;  // Required values/code vocabularies are checked by D3.
+        default:
+            return false;
+    }
 }
 
 struct PersonEditInput {
@@ -400,7 +491,9 @@ inline bool is_valid_import_binding(const ImportColumnBinding& binding) {
         return binding.target_field == ImportFieldId::Unspecified;
     }
     if (binding.disposition != ImportColumnDisposition::PersonField) { return false; }
-    const auto* spec = find_person_field(static_cast<FieldId>(binding.target_field));
+    FieldId field;
+    if (!try_to_person_field(binding.target_field, &field)) { return false; }
+    const auto* spec = find_person_field(field);
     return spec != nullptr && spec->source_importable && !spec->system_managed &&
         (binding.target_field != ImportFieldId::LifeStatus || binding.status_source_confirmed);
 }
@@ -522,6 +615,17 @@ struct YearCountCondition {
     std::int32_t minimum = 0;
 };
 
+// Shape only: no age calculation, scenario expansion or row selection.
+inline bool is_valid_year_count_condition(const YearCountCondition& condition) {
+    if (!condition.enabled) { return true; }
+    if (condition.accepted_values.empty() && !condition.has_minimum) { return false; }
+    if (condition.minimum < 0) { return false; }
+    for (auto value : condition.accepted_values) {
+        if (value < 0) { return false; }
+    }
+    return true;
+}
+
 struct TagCondition {
     TagCode tag_code;
     std::string tag_value;
@@ -561,7 +665,7 @@ struct RosterResult {
     UtcTimestamp generated_at;
     FilterSpec filter_spec;  // Resolved scenario conditions, for display/audit only.
     std::vector<RosterRow> rows;
-    std::size_t total_count = 0;
+    std::size_t total_count() const { return rows.size(); }
 };
 
 enum class DerivedColumnId : std::uint8_t {
@@ -669,6 +773,8 @@ struct ApiResult {
 };
 
 struct ImportPreviewRequest {
+    // Untrusted proposal: the service revalidates source, profile, bindings and status.
+    // Caller versions are hints, never approval evidence or the trusted preview identity.
     ApiMeta meta;
     std::string source_file_path;
     std::string worksheet_name;

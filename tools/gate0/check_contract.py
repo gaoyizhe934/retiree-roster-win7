@@ -42,10 +42,14 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+def git_command(*args):
+    return ["git", "-c", "safe.directory=" + ROOT.as_posix(), *args]
+
+
 def git(*args):
     # Limit the ownership exception to this process and the known workspace.
     return subprocess.run(
-        ["git", "-c", "safe.directory=" + ROOT.as_posix(), *args],
+        git_command(*args),
         cwd=ROOT, capture_output=True, encoding="utf-8", errors="replace",
     )
 
@@ -106,18 +110,44 @@ def boundary_fixture():
     return {"cases": 13, "rule_engine_executed": False}
 
 
-def compile_and_run(source_name):
+def compile_and_run(source_name, include_dir="include", executable_stem=None):
     compiler = shutil.which("g++")
     require(compiler is not None, "g++ not available")
-    executable = "build/gate0/" + Path(source_name).stem + (".exe" if sys.platform == "win32" else "")
+    executable = "build/gate0/" + (executable_stem or Path(source_name).stem) + (".exe" if sys.platform == "win32" else "")
     command = [compiler, "-std=c++14", "-Wall", "-Wextra", "-pedantic-errors",
-               "-I", "include", source_name, "-o", executable]
+               "-I", include_dir, source_name, "-o", executable]
+    details = {"commands": []}
     compiled = subprocess.run(command, cwd=ROOT, capture_output=True, encoding="utf-8", errors="replace")
-    require(compiled.returncode == 0, "compilation failed: " + compiled.stderr)
-    ran = subprocess.run([str(ROOT / executable)], cwd=ROOT, capture_output=True,
+    details["commands"].append({"scope": "compile", "command": command, "exit_code": compiled.returncode,
+                                "stdout": compiled.stdout, "stderr": compiled.stderr})
+    if compiled.returncode != 0:
+        raise CheckFailure("compilation failed: " + compiled.stderr, details)
+    run_command = [str(ROOT / executable)]
+    ran = subprocess.run(run_command, cwd=ROOT, capture_output=True,
                          encoding="utf-8", errors="replace")
-    require(ran.returncode == 0, "test failed: " + str(ran.returncode) + " " + ran.stderr)
-    return {"command": command, "compile_exit": compiled.returncode, "test_exit": ran.returncode}
+    details["commands"].append({"scope": "run", "command": run_command, "exit_code": ran.returncode,
+                                "stdout": ran.stdout, "stderr": ran.stderr})
+    if ran.returncode != 0:
+        raise CheckFailure("test failed: " + str(ran.returncode) + " " + ran.stderr, details)
+    return details
+
+
+def enum_field_mapping():
+    normal = compile_and_run("tests/contract/enum_field_mapping_test.cpp")
+    header = (ROOT / "include/retiree_roster/schema_types.hpp").read_text(encoding="utf-8")
+    declaration = re.search(r"enum class PersonFieldId : std::uint8_t \{(.*?)\n\};", header, re.S)
+    require(declaration is not None, "PersonFieldId declaration not found")
+    fields = re.findall(r"^\s*(\w+),\s*$", declaration.group(1), re.M)
+    require(len(fields) == 34, "unexpected PersonFieldId shape for reorder regression")
+    reversed_body = "\n" + "".join("    " + name + ",\n" for name in reversed(fields))
+    reordered_header = header[:declaration.start(1)] + reversed_body.rstrip("\n") + header[declaration.end(1):]
+    fixture = OUTPUT / "reordered/retiree_roster/schema_types.hpp"
+    fixture.parent.mkdir(parents=True, exist_ok=True)
+    fixture.write_text(reordered_header, encoding="utf-8")
+    reordered = compile_and_run("tests/contract/enum_field_mapping_test.cpp", "build/gate0/reordered",
+                                "enum_field_mapping_reordered_test")
+    return {"normal": normal, "reordered": reordered, "reordered_fields": len(fields),
+            "reordered_header_sha256": hashlib.sha256(fixture.read_bytes()).hexdigest()}
 
 
 def obsolete_api_rejected():
@@ -138,7 +168,10 @@ def obsolete_api_rejected():
         "tag_audit_operator": "UpdateTagRequest r; r.mutation.updated_by = \"forged\";",
         "caller_freezes_profile": "ImportProfile p; p.frozen = true;",
         "ambiguous_schema_version": "ApiMeta m; m.schema_version = 3;",
+        "writable_roster_count": "RosterResult r; r.total_count = 99;",
     }
+    for field in ("PersonCode", "CreatedAt", "UpdatedAt", "ImportBatchId", "LastModifiedBy"):
+        snippets["edit_protected_" + field] = "FieldChange c; c.field = EditableFieldId::" + field + ";"
     for field in ("PersonId", "PersonCode", "CreatedAt", "UpdatedAt", "ImportBatchId", "LastModifiedBy", "PinyinSortKey"):
         snippets["import_protected_" + field] = "ImportColumnBinding b; b.target_field = ImportFieldId::" + field + ";"
     control = OUTPUT / "syntax_control.cpp"
@@ -195,7 +228,7 @@ def documentation_links():
     return {"files": len(paths), "local_links": count}
 
 
-def diff_whitespace(base_ref=None):
+def pr_references(base_ref=None):
     base_ref = base_ref or os.environ.get("ROSTER_BASE_REF", "origin/main")
     base = git("rev-parse", "--verify", "--end-of-options", base_ref + "^{commit}")
     require(base.returncode == 0, "cannot resolve base ref: " + base_ref)
@@ -205,15 +238,28 @@ def diff_whitespace(base_ref=None):
     merge = git("merge-base", base_sha, head_sha)
     require(merge.returncode == 0, "base and HEAD have no merge base")
     merge_sha = merge.stdout.strip()
-    details = {"base_ref": base_ref, "base_sha": base_sha, "head_sha": head_sha,
-               "merge_base_sha": merge_sha, "commands": []}
+    return {"base_ref": base_ref, "base_sha": base_sha, "head_sha": head_sha,
+            "merge_base_sha": merge_sha, "reference_commands": [
+                {"command": git_command("rev-parse", "--verify", "--end-of-options", base_ref + "^{commit}"),
+                 "exit_code": base.returncode, "stdout": base.stdout, "stderr": base.stderr},
+                {"command": git_command("rev-parse", "--verify", "HEAD^{commit}"),
+                 "exit_code": head.returncode, "stdout": head.stdout, "stderr": head.stderr},
+                {"command": git_command("merge-base", base_sha, head_sha),
+                 "exit_code": merge.returncode, "stdout": merge.stdout, "stderr": merge.stderr},
+            ]}
+
+
+def diff_whitespace(base_ref=None):
+    details = pr_references(base_ref)
+    merge_sha, head_sha = details["merge_base_sha"], details["head_sha"]
+    details["commands"] = []
     for kind, args in (
         ("committed_pr", ("diff", "--check", merge_sha + "..." + head_sha)),
         ("staged", ("diff", "--cached", "--check")),
         ("worktree", ("diff", "--check")),
     ):
         result = git(*args)
-        details["commands"].append({"scope": kind, "command": ["git", *args],
+        details["commands"].append({"scope": kind, "command": git_command(*args),
                                     "exit_code": result.returncode,
                                     "stdout": result.stdout, "stderr": result.stderr})
     if any(c["exit_code"] != 0 for c in details["commands"]):
@@ -247,6 +293,9 @@ def main():
         ("cpp14_consumer", lambda: compile_and_run("tests/contract/consumer_contract_test.cpp")),
         ("preview_revision", lambda: compile_and_run("tests/contract/preview_revision_test.cpp")),
         ("input_authority", lambda: compile_and_run("tests/contract/input_authority_test.cpp")),
+        ("enum_field_mapping", enum_field_mapping),
+        ("field_change_value_kind", lambda: compile_and_run("tests/contract/field_change_test.cpp")),
+        ("filter_shape", lambda: compile_and_run("tests/contract/filter_shape_test.cpp")),
         ("obsolete_api_rejected", obsolete_api_rejected),
     ]
     if args.layer == "all":
@@ -287,9 +336,17 @@ def main():
                 compiler_information = {"status": "unavailable", "error": str(error)}
         else:
             compiler_information = {"status": "unavailable", "reason": "g++ not on PATH"}
+    try:
+        identity = pr_references(args.base_ref)
+    except Exception as error:
+        identity = {"error": str(error)}
+        # Every layer must identify its base and HEAD; an invalid ref never passes.
+        if all(item["passed"] for item in RESULTS):
+            RESULTS.append({"name": "pr_identity", "passed": False, "error": str(error)})
     evidence = {
         "scope": "Gate 0 draft contract checks only; no product/Win7/Gate approval",
         "layer": args.layer,
+        "pr_identity": identity,
         "invocation": ["python", "tools/gate0/check_contract.py", *sys.argv[1:]],
         "unexecuted_layers": {
             "all": ["formal_msvc_cmake", "win7"],
