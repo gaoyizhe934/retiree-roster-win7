@@ -1,8 +1,21 @@
-# PR #2 最新 R Review 返工复核交接
+# PR #2 Gate 0 候选复核交接
 
-日期：2026-10-02。阶段 PR 仍为 #2；D1B 后续材料归入唯一有效 #3，旧 #1 已关闭。依据：[R Conversation 意见](https://github.com/gaoyizhe934/retiree-roster-win7/pull/2#issuecomment-5943240204)及创建者提供的详细返工清单。
+日期：2026-10-02。阶段 PR 仍为 #2；D1B 后续材料归入唯一有效 #3，旧 #1 已关闭。依据：[R Formal Review](https://github.com/gaoyizhe934/retiree-roster-win7/pull/2#pullrequestreview-5389158602)及创建者提供的证据身份漂移解决方案。
 
-当前远端／本地已提交 HEAD 为 279a204aaf00233fac262f79ac4e3dd80d392f21。本轮 ContractVersion 4 是该提交之上的未提交候选，不把该 SHA 写成返工后的新 HEAD。新 SHA 须在发布后更新并让 R 固定该提交复核；验证详情见[返工报告](STABILIZATION_REVIEW.md)。
+公共契约候选基线（contract_candidate_sha）：
+`e8ad944e7c9c8df77c7c5fd883c4459a75270e92`。
+
+该技术候选已提交并推送，包含 ContractVersion 4（Draft）以及 R01／R03／R04／R05 的契约加固；R02 保留为 D3 Application Service 的后续验收责任。作者侧在该候选上实际完成 structure 7/7、cpp14 8/8、diff 1/1、all 15/15，具体记录见[返工报告](STABILIZATION_REVIEW.md)及其发布评论。该报告保留旧审核快照，不用其中历史 SHA 或未提交表述代替此处的候选身份。
+
+contract_candidate_sha 固定标识最后一个修改公共契约、contract tests 和 Gate0 runner 的技术候选，不能描述为本文自己的“当前 HEAD”。之后仅同步状态／证据的文档提交不会改变该候选基线。实际 review_head 由 GitHub PR 当前 HEAD、PR 正文、Formal Review 的 commit identity 和在该提交运行的 evidence JSON 共同固定；tracked 文档不追写自身提交 SHA。
+
+## R Formal Review 状态
+
+2026-10-02，非作者 R 已针对上述契约候选提交 [GitHub Formal Review](https://github.com/gaoyizhe934/retiree-roster-win7/pull/2#pullrequestreview-5389158602)，结论为 CHANGES_REQUESTED。
+
+该 Review 确认 R01／R03／R04／R05 的契约级加固成立，R02 正确保留为 D3 后续验收；未发现新的契约级 P0/P1。唯一阻塞项是 Gate 状态、handoff 和 PR 正文中的证据身份仍部分指向旧提交。
+
+本轮只同步两份状态文档与 PR 正文。同步提交发布并完成当前 HEAD 证据检查后，需要正式非作者 R 针对新的 GitHub PR HEAD 再提交 Formal Review；本文件不声明该阻塞已获 R 关闭或已 APPROVE。作者不能切换角色自签，辅助审查不能替代 Formal Review。
 
 ## C 轨正式工具链请求
 
@@ -25,23 +38,23 @@
 
 MinGW GCC 6.3.0 的补充检查不能替代上述正式验收。原始资料 SHA-256、base／merge-base／新 HEAD、编译器完整版本与每条命令须随 C 输出保存。不要继承上一轮或 D1B 静态检查数字。
 
-## R 轨新候选复核请求
+## Review Target 身份验证
 
-最新已核对 GitHub formal reviews 数为 0；现有意见是 Conversation comment。本轮尚无新提交，因而尚无可指向的新 HEAD Formal Review。作者不切换角色自签，也不以内部 Standards／Spec 辅助审查替代正式 R。
+发布状态／证据同步提交后，先取得真实 HEAD，再按下面的身份链固定正式复核对象：
 
-R 在发布后固定新 HEAD，至少核对：
+1. 当前 GitHub PR HEAD 与本地 HEAD 一致，PR 正文的 review_head 与二者一致。
+2. base／merge-base 核对为 main 基线 af0ae01981ac3d65653921ceada1cee605de5607；若基线发生变化，先重新核对，不套用旧证据。
+3. `git diff --name-status e8ad944e7c9c8df77c7c5fd883c4459a75270e92..HEAD` 只能包含 docs/status/GATE0_REVIEW_HANDOFF.md 与 docs/status/GATE_STATUS.md 的状态／证据同步。
+4. 公共契约、contract tests、Gate0 runner、业务基线、ADR 和 ContractVersion 均保持技术候选原样；若范围扩大，不能按本次身份修复直接请求 Approve。
+5. 在实际 review_head 重跑 structure／cpp14／diff／all，四份 evidence JSON 的 pr_identity.head_sha 均须等于该提交，保存命令、退出码、诊断、工具版本及输入指纹。不能复制技术候选的旧数字。
+6. PR 正文记录固定的 contract_candidate_sha 与实际 review_head，以及当前 HEAD 的真实检查结果；tracked 文档不再为追写自身 SHA 产生第二个提交。
+7. R 的最终 Formal Review 必须绑定 GitHub 当前 HEAD，记录平台 Review URL；Conversation comment 不代替 Approval。
 
-1. R01：全部 import／edit 显式按名称转换；反序 canonical 枚举仍通过；所有合法目标不包含系统字段。
-2. R04：日期／文本／枚举载体及 clear 互斥，规范 Unknown、无效日期、越权字段拒绝。
-3. R05：YearCountCondition 空启用、负集合／下限被拒绝，集合加下限合法；D4 业务筛选尚未实现。
-4. R03：total_count() 只有 rows.size() 来源，旧可写字段负例失败。
-5. R02：不可信请求与服务生成可信预检分离；[D3 强制表](../baseline/01_导入Profile冻结说明.md)仍是待实现验收。
-6. 新测试进入 Gate0 runner，structure／cpp14／diff／all 证据与实际输入指纹对应。
-7. 四份原始 Word／Excel 指纹保持不变，Diff 只含本轮返工，未引入真实人员数据。
-8. C 正式编译、服务集成、快照与 Win7 未运行项不冒充通过。
-9. 对该 HEAD 提交 GitHub Formal Review；按实际结果 APPROVE／REQUEST_CHANGES／COMMENT，记录平台 Review URL。
+重跑命令均使用 `python tools/gate0/check_contract.py --layer <structure|cpp14|diff|all> --base-ref origin/main`。历史 7/7、8/8、1/1、15/15 只有在实际新提交复跑一致时，才可写成该 HEAD 的结果。原始资料指纹及未验证层仍须同步核对；完整业务实现责任保持[现有 D3 强制表](../baseline/01_导入Profile冻结说明.md)，不在本轮重新打开技术返工。
 
 若 R 判断候选可合并，APPROVE 正文仍应明确“PR #2 候选通过 ≠ Gate 0 通过，Gate 0 等待 A/B/C/甲方及剩余基线条件”。Review 不是创建者的合并授权。
+
+C-G0-01／02／03 是 Gate 0 剩余条件，不是该 Formal Review 新发现的代码缺陷，也不直接阻塞本次证据身份修复。R 是否 APPROVE 以新 HEAD 的实际复核为准；PR APPROVE／合并不等于 Gate 0 PASS，不自动允许进入 D2。
 
 ## A／B 与后续责任
 

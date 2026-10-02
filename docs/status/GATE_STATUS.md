@@ -20,6 +20,13 @@ Gate 0 的缺口：A 字段与两样表／重复规则确认、B 在新基线合
 
 ## PR #2 审查状态（独立于 Gate）
 
-2026-10-02，[非作者 R 的 Conversation 意见](https://github.com/gaoyizhe934/retiree-roster-win7/pull/2#issuecomment-5943240204)针对 279a204 确认未发现 Bug／Blocker、可继续候选复核，登记 Risk R01–R05。作者本轮加固 R01／R03／R04／R05，R02 形成 D3 验收清单；本地新候选仍待 R 返工复核。GitHub Formal Review 数量当日核对为 0，Conversation 意见不等于 APPROVE，也不签认新候选。
+公共契约候选基线（contract_candidate_sha）：
+`e8ad944e7c9c8df77c7c5fd883c4459a75270e92`。
 
-C 正式工具链与 R 新候选 Review 的合作材料见[复核交接](GATE0_REVIEW_HANDOFF.md)。尚未发布本轮新 HEAD，正式非作者复核未提交；本表只登记状态，未改变 R 的 Gate 结论。PR #2 候选通过也不等于 Gate 0 通过。
+该候选包含 ContractVersion 4 的针对性加固，已提交并推送。2026-10-02，非作者 R 已针对该提交作出 [GitHub Formal Review](https://github.com/gaoyizhe934/retiree-roster-win7/pull/2#pullrequestreview-5389158602)，状态为 CHANGES_REQUESTED。Review 确认 R01／R03／R04／R05 加固成立，R02 正确保留为 D3 Application Service 的后续验收责任；未发现新的契约级 P0/P1。
+
+该 Review 的唯一阻塞项为证据身份漂移。本轮只同步状态／证据，不重新修改公共契约、测试、runner、业务基线或 ContractVersion。同步提交完成后，由非作者 R 对新的 GitHub PR HEAD 再次 Formal Review；在 R 实际复核前不把 REQUEST_CHANGES 写成已关闭或 APPROVE。
+
+contract_candidate_sha 是固定技术候选，不是本文自己的当前提交 SHA。实际 review_head 由 PR 当前 HEAD、正文、Formal Review commit identity 和该提交重跑的 evidence JSON 固定；从候选到 review_head 之间只允许本轮两份状态文档同步变更，详见[复核交接](GATE0_REVIEW_HANDOFF.md)。不通过反复追写 tracked 文档自身 SHA 形成新身份漂移。
+
+C 正式工具链、CMake／XMake、双 Win7 RTM、SQLite／revision 服务、规则引擎、快照集成、GDI／xlsx 和物理打印仍未验证。C-G0-01／02／03 属于 Gate 0 剩余条件，不直接阻塞本次证据身份修复；不以补充契约检查替代它们。本表登记已发生的 PR 审查和待办，未改变 R 的 Gate 结论。PR #2 的 APPROVE／合并状态与 Gate 0 相互独立，候选通过或合并均不代表 Gate 0 通过。
