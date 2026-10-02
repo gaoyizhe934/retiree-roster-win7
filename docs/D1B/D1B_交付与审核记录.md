@@ -41,6 +41,7 @@
 
 | 文件 | 修改原因 |
 | --- | --- |
+| .gitattributes | 固定 HTML 为 LF；已复现 autocrlf=true 全新检出导致漂移，修复后的独立检出检查记录在发布快照 |
 | 生成/设计正文.md | CV4/main、显式映射、FieldChange、信任边界、派生人数、YearCount、白名单、Q/RV |
 | 生成/设计数据.json | 候选白名单/类型比较、姓名及状态日期UI override、报告/搜索/日期默认 |
 | 生成/build_design.py | 分离三基线身份、当前header SHA、CV4检查、UI override、只读--check |

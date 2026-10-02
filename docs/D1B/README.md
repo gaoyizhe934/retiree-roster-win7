@@ -18,6 +18,8 @@ python docs/D1B/生成/test_build_design.py
 
 `--check` 只读重建并逐字节比较六份产物；漂移或检查失败返回1，不改写产物。正常构建只在检查全部通过时写出。输入 SHA-256、版本和固定基线见交付 JSON；实际 Git 审查头及提交后验证由 PR #3 和发布快照固定；生成物记录输入指纹，不在提交中内嵌自身 SHA。
 
+目录内 `.gitattributes` 固定 HTML 使用 LF；即使 Windows 启用 `core.autocrlf=true`，全新检出仍与生成器的确定字节一致。检出后的只读检查结果见发布快照。
+
 ImportFieldId/EditableFieldId 与 PersonFieldId 数值解耦，27/28个字段经 try_to_person_field 显式映射；FieldChange 区分文本、枚举、日期与 canonical Unknown 清空。P12 提案由服务重验，Confirm 源身份核对与 immutable checked copy 入库分离。total_count() 仅由 rows.size() 派生；YearCount validator 只做 shape。
 
 Unknown 日期年月日空白/disabled；P22 既有 LifeStatus/DeathDate 只读，更正经待批准的 D20；P30 筛选白名单/类型比较为候选；P20 搜索语义与 P14/P15 报告接口待 A/R，因此报告导出默认禁用。
