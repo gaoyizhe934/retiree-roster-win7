@@ -1,0 +1,14 @@
+case_id,target_year,birth_year,life_status,expected_selected
+age_69,2026,1957,Living,false
+age_70,2026,1956,Living,true
+age_71,2026,1955,Living,false
+age_74,2026,1952,Living,false
+age_75,2026,1951,Living,true
+age_79,2026,1947,Living,false
+age_80,2026,1946,Living,true
+age_84,2026,1942,Living,false
+age_85,2026,1941,Living,true
+age_89,2026,1937,Living,false
+age_90,2026,1936,Living,true
+age_91,2026,1935,Living,true
+deceased_90,2026,1936,Deceased,false
