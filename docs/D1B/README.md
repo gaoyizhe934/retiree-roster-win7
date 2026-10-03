@@ -1,6 +1,6 @@
 # D1B 使用流程与模板设计（CV4 / SP1）
 
-阶段/轨道：D1B，v0.3；设计日期2026-10-01，最后修订2026-10-03。ContractVersion 4 Draft；DatabaseSchemaVersion 独立且尚未分配；Gate 0 未通过，待非作者 R 复核。
+阶段/轨道：D1B，v0.3；设计日期2026-10-01，工具链最后修订2026-10-04。ContractVersion 4 Draft；DatabaseSchemaVersion 独立且尚未分配；Gate 0 未通过，待非作者 R 复核。
 
 固定内容锚点：SP1_BASELINE_ANCHOR `a0dfdd8e373ae90f765c20cf8c075a8754f674bd`，来自已 APPROVED 并合并的 PR #8；目标 Windows 7 SP1 / 6.1.7601 x86/x64，需求说明和开发规划 v2.1、SP1 修订的任务台账。OD-0002 Accepted 只覆盖目标 OS，不改变业务 DTO/API、ContractVersion 或 Win32/x86 主发行架构。
 
@@ -19,10 +19,14 @@ python docs/D1B/生成/test_build_design.py
 
 `--check` 内存重建六份产物并逐字节比较，漂移/失败返回1且零写入；输入指纹和固定内容锚点见交付 JSON。D1B 内 `.gitattributes` 固定 HTML LF，保留 Windows autocrlf=true 的检出复现性。
 
+2026-10-04 的 Review 返工限定于生成器和证据工具链：机器摘要统一 UTF-8（包含 cp936 下的成功、漂移和缺文件失败），生产与反例共用 `assemble_data`、`ROOT_INPUT_FILES`。链接先检查协议和仓库边界，之后才查询仓库内文件；Markdown 与 HTML 的 `a[href]` 同时核查。语义文本由 `semantic_anchors` 渲染，实际 SVG 与完整 Mermaid 的节点/路径一致性也纳入检查。详细的 14 项闭环矩阵见评审修改报告。
+
+确定性证据仅记录 `required_machine_output_encoding=utf-8` 和单一 `repository_slug`；Python 版本、默认 stdout 编码和 UTF-8 模式保存在本轮仓库外运行记录，不参与六份产物的字节比较。回归主动设置 cp936，并继续要求 UTF-8 JSON，不依赖贡献者手动设置 `PYTHONUTF8=1`。
+
 Q1-B：首期只有当前业务工作簿；Q2-A：P1=Sheet1行1/52标题、P2=行3/23标题均为首期 Source Profile。范围确认不等于 ImportProfile 冻结，当前仍未冻结并进入 P12；工作簿 HEADER-ONLY、0 数据行。5个Unsupported、8个机器无法确认的映射语义及批准/值域仍待 A/D3/R，数据级脱敏测试样本仍需补充。
 
 CV4 主体保持：27/28 显式映射、FieldChange payload/clear、可信 preview/checked copy、派生 total_count()、YearCount shape、候选白名单/类型比较、Unknown空白/disabled、既有状态日期单入口、报告默认禁用和搜索待 A/R。
 
-D1B 成果继续使用 [PR #3](https://github.com/gaoyizhe934/retiree-roster-win7/pull/3)；远程分支 v3 是历史名称。最新 main 通过基线 integration PR 纳入阶段分支，不使用本地 merge/rebase、强推或重建成果 PR；每次合并须用户单独授权和必要评审。本轮候选及整合/发布状态以本地交付快照和 GitHub 为准。
+D1B 成果继续使用 [PR #3](https://github.com/gaoyizhe934/retiree-roster-win7/pull/3)；远程分支 v3 是历史名称。最新 main 通过 GitHub PR 流程纳入阶段分支，不使用本地 merge/rebase、强推或重建成果 PR；每次合并须用户单独授权和必要评审。本轮候选及整合/发布状态以本地交付快照和 GitHub 为准。
 
 作者静态检查及 HTML 增量目视不代表 Win32、导入事务、GDI/xlsx、实物打印或 Win7 SP1 VM 验收。权威来源见固定锚点的基线说明、OD-0002、SP1_BASELINE_HANDOFF 与 Gate Status。

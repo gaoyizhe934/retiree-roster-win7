@@ -2244,5 +2244,270 @@
     "data_rows": 0,
     "pending_unsupported": 5,
     "pending_mapping_semantics": 8
+  },
+  "semantic_anchors": {
+    "snapshot_count_single_source": "不存在第二份可写人数状态",
+    "profile_not_frozen": "ImportProfile 未冻结",
+    "person_identity_1": "工号，可空、可重复",
+    "person_identity_2": "PersonCode 是业务可见固定编号",
+    "tag_year_1": "不跨年继承",
+    "unknown_date_1": "不能参与比较",
+    "column_disposition_1": "BatchRawOnly",
+    "column_disposition_2": "目标必须 Unspecified",
+    "column_disposition_3": "Unsupported 是默认",
+    "profile_matching_1": "当前没有已冻结 Profile",
+    "profile_matching_2": "唯一匹配已冻结 Profile 且无缺失、重复、歧义、顺序变化、未知列",
+    "revision_confirmation_1": "成功revision不可重复确认",
+    "revision_confirmation_2": "mapping_version",
+    "revision_confirmation_3": "immutable checked copy",
+    "snapshot_invalidation_1": "StaleSnapshot",
+    "snapshot_invalidation_2": "人员、Tag、拼音键、导入、恢复、迁移",
+    "snapshot_invalidation_3": "恢复不能复用旧版本号",
+    "snapshot_invalidation_4": "同一临界区",
+    "template_rows_1": "rows_per_page=0",
+    "review_status_1": "ContractVersion 4",
+    "review_status_2": "DatabaseSchemaVersion 独立且尚未分配",
+    "review_status_3": "Gate 0 未通过",
+    "enum_boundary_1": "不允许整数 cast 成 PersonFieldId",
+    "enum_boundary_2": "不依赖 enum 数值 identity",
+    "enum_boundary_3": "forged／unknown／Unspecified",
+    "enum_boundary_4": "try_to_person_field(EditableFieldId",
+    "date_payload_1": "日期赋值",
+    "date_payload_2": "有效且已知的 Year",
+    "date_payload_3": "Text／Enum 赋值混入日期均拒绝",
+    "text_payload_1": "使用 value",
+    "clear_payload_1": "年月日全0",
+    "year_count_empty_1": "enabled=true空集合无minimum",
+    "year_count_nonnegative_1": "即使 has_minimum=false",
+    "year_count_shape_1": "is_valid_year_count_condition()",
+    "year_count_shape_2": "不是完整 FilterSpec validator",
+    "preview_trust_1": "caller proposal",
+    "preview_trust_2": "Application Service 自己读取源文件",
+    "preview_trust_3": "approved Profile",
+    "preview_trust_4": "重复 Person target",
+    "preview_trust_5": "可信 mapping_version",
+    "preview_trust_6": "immutable checked data copy",
+    "confirm_source_identity": "可重读源字节验证 SHA/identity",
+    "confirmation_identity_2": "入库只消费 immutable checked copy",
+    "confirmation_identity_3": "源缺失或变化必须拒绝",
+    "search_scope_1": "空 search_text",
+    "target_os_1": "Windows 7 SP1",
+    "target_os_version_1": "6.1.7601",
+    "requirements_version_1": "需求说明 v2.1",
+    "plan_version_1": "开发规划 v2.1",
+    "owner_os_scope_1": "OD-0002 只覆盖目标 OS 条款",
+    "baseline_handoff_1": "SP1_BASELINE_HANDOFF.md"
+  },
+  "flow_model": {
+    "nodes": {
+      "S": "启动",
+      "O": "初始化本地 OperatorContext",
+      "C": "库可读取且有人?",
+      "D00": "数据读取错误",
+      "P00": "首次启动",
+      "P01": "首页",
+      "P10": "选择文件",
+      "P11": "工作表与表头",
+      "F": "唯一匹配已冻结Profile?",
+      "A": "自动预填",
+      "P12": "逐列处置与状态确认",
+      "P13": "预检汇总与revision",
+      "P14": "异常及重复候选",
+      "D10": "确认当前预检",
+      "P15": "执行与结果",
+      "P20": "人员列表",
+      "P21": "详情",
+      "P22": "业务编辑与独立Tag",
+      "D20": "状态变更确认",
+      "P30": "显式条件与生成名单",
+      "P40": "模板选择",
+      "P41": "模板编辑",
+      "P50": "预览",
+      "D50": "系统打印",
+      "D51": "保存xlsx",
+      "P51": "脱敏反馈与本地路径"
+    },
+    "edges": [
+      [
+        "S",
+        "O",
+        ""
+      ],
+      [
+        "O",
+        "C",
+        ""
+      ],
+      [
+        "C",
+        "D00",
+        "读取失败"
+      ],
+      [
+        "D00",
+        "C",
+        "重试"
+      ],
+      [
+        "C",
+        "P00",
+        "无数据"
+      ],
+      [
+        "C",
+        "P01",
+        "有数据"
+      ],
+      [
+        "P00",
+        "P10",
+        ""
+      ],
+      [
+        "P01",
+        "P10",
+        ""
+      ],
+      [
+        "P10",
+        "P11",
+        ""
+      ],
+      [
+        "P11",
+        "F",
+        ""
+      ],
+      [
+        "F",
+        "A",
+        "符合全部匹配条件"
+      ],
+      [
+        "F",
+        "P12",
+        "无匹配或有歧义"
+      ],
+      [
+        "A",
+        "P13",
+        ""
+      ],
+      [
+        "P12",
+        "P13",
+        ""
+      ],
+      [
+        "P13",
+        "P14",
+        "有问题"
+      ],
+      [
+        "P14",
+        "P12",
+        "返回修改"
+      ],
+      [
+        "P13",
+        "D10",
+        "当前revision可确认"
+      ],
+      [
+        "D10",
+        "P15",
+        "备份成功后事务"
+      ],
+      [
+        "P15",
+        "P20",
+        "成功"
+      ],
+      [
+        "P15",
+        "P13",
+        "失效或回滚已核实"
+      ],
+      [
+        "P20",
+        "P21",
+        ""
+      ],
+      [
+        "P21",
+        "P22",
+        ""
+      ],
+      [
+        "P22",
+        "P21",
+        "各请求成功"
+      ],
+      [
+        "P21",
+        "D20",
+        ""
+      ],
+      [
+        "D20",
+        "P21",
+        ""
+      ],
+      [
+        "P01",
+        "P30",
+        ""
+      ],
+      [
+        "P20",
+        "P30",
+        ""
+      ],
+      [
+        "P30",
+        "P40",
+        "生成snapshot_id"
+      ],
+      [
+        "P40",
+        "P41",
+        ""
+      ],
+      [
+        "P41",
+        "P40",
+        ""
+      ],
+      [
+        "P40",
+        "P50",
+        "同快照与模板值副本"
+      ],
+      [
+        "P50",
+        "D50",
+        ""
+      ],
+      [
+        "P50",
+        "D51",
+        ""
+      ],
+      [
+        "D51",
+        "P51",
+        ""
+      ],
+      [
+        "P51",
+        "P50",
+        ""
+      ],
+      [
+        "P50",
+        "P30",
+        "{{semantic.snapshot_invalidation_1}}"
+      ]
+    ]
   }
 }

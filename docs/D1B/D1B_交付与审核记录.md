@@ -1,6 +1,16 @@
 # D1B v0.3 交付与审核记录
 
-设计日期2026-10-01；最后修订2026-10-03。ContractVersion 4 Draft；DatabaseSchemaVersion 独立且尚未分配；Gate 0 未通过，待非作者 R 复核。
+设计日期2026-10-01；工具链最后修订2026-10-04。ContractVersion 4 Draft；DatabaseSchemaVersion 独立且尚未分配；Gate 0 未通过，待非作者 R 复核。
+
+## 2026-10-04 Review 闭环范围
+
+本轮只加固生成器、自动回归与证据。14 条 finding 的逐项实现和复核入口见 [评审修改报告](D1B_评审修改报告.md)；原 CV4 业务设计、字段能力、Profile 规则、模板值和控件数不变。SVG 使用原 Mermaid 的完整节点与业务边，保留既有图表色彩与 CSS；语义 placeholder 渲染后正文业务文字不变。
+
+机器摘要在默认中文 Windows / cp936 环境下统一 UTF-8；六份 tracked 产物继续只包含固定输入与声明规范。实际 Python/平台/stdout/UTF-8 mode 记录在仓库外本轮验证材料中；它们不进入生成物，避免跨机 drift。
+
+验证矩阵覆盖正常 build、只读 check、原有输入反例与新反例、cp936 的 clean/drift/缺文件报告、危险链接无外部 exists 探测、简单成员 parser、initial_focus、SVG/Mermaid、Windows autocrlf 检出与 Diff 格式。所有数量从实际 JSON 读取；旧“两项回归”是历史记录，本轮套件以实际输出为准。
+
+本轮保留未暂存 Diff 供人工审核，建议一次提交 `fix: 加固D1B生成器跨编码与验证边界`，获授权后一次 push 至现有 #3。发布后的远端 head、PR body、闭环评论及 R Review 按相应授权处理；本文不虚构 clean commit、push 或 Approval。
 
 ## 固定内容身份与动态发布身份
 

@@ -120,6 +120,51 @@
       "check": "反例：搜索语义候选待确认",
       "pass": true,
       "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：初始焦点属于本页控件",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：语义锚点完整输出",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：危险链接 javascript",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：危险链接 data",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：危险链接 //outside/share/x",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：危险链接 C",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：危险链接 ../../../outside/x",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：Mermaid节点漂移",
+      "pass": true,
+      "detail": "保持SVG模型不变，只改Mermaid标签"
+    },
+    {
+      "check": "反例：Mermaid路径漂移",
+      "pass": true,
+      "detail": "核心边变更必须使交付检查失败"
     }
   ]
 }

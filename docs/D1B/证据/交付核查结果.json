@@ -4,15 +4,21 @@
   "pr2_review_head": "f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4",
   "contract_version": 4,
   "checked_input_sha256": {
-    "docs/D1B/生成/设计正文.md": "bc53d60d4449205e401aeb53f6a13c8bc31a6f08e54a5fb1ac4e6ccec4fa928f",
-    "docs/D1B/生成/设计数据.json": "79d08b1b2c7fb1df1f359a12eedd8d5bb85207ebe348fe2bf81494fc04bb63a9",
-    "docs/D1B/生成/build_design.py": "46a0c515b2ad1a400a5ecb993769b4f84352a52770d9744301b0a4f60c505237",
-    "docs/D1B/生成/test_build_design.py": "b5d7ca12ab0ba936daf49ed789053feef746928a38578787d13e930abf458a49",
-    "docs/D1B/README.md": "3f07f45cc4749f341dd7dbde56ede37029fb7237860e04fbe1b621fe9055dafe",
-    "docs/D1B/D1B_交付与审核记录.md": "3cf7f4e3e5066743851e35f6f189a51c477116a2ab733680f4011df88e3e09e4",
-    "docs/D1B/D1B_评审修改报告.md": "50367917b0daecbcdc73ba5e69b6fd6eb00443eb02363945f9535455c89867a8",
-    "include/retiree_roster/schema_types.hpp": "73217a0db2469c4349c4b54bb97fd1d3ea88f01ca82285027b95d10bf3bf7161"
+    "docs/D1B/生成/设计正文.md": "cbd4ad2f7ece7cae57c81867a97d9187a4a66adb4d0eac053c8945d0c2e51b91",
+    "docs/D1B/生成/设计数据.json": "8f5b09520fcec8285c831e2f572195178520b792e4cae3e0d10039522140dd5e",
+    "docs/D1B/生成/build_design.py": "06d63a2354b096ec1e92d2ea40561d3b6663ab668606e8a34041fcc9652c7ed2",
+    "docs/D1B/生成/test_build_design.py": "883445b9c9edd84badf0b3884f819047fca2821e00d353e2aaaa2703cdf2c942",
+    "docs/D1B/README.md": "c9388d6dd28a6cb8d782a464f2f6f9c7690efda9707c5c26e894aacabe2aaa94",
+    "docs/D1B/D1B_交付与审核记录.md": "a50caec70490c22f05160c769ad8fa81a77ee5b64d1f18ffa8bb95b81ff20c26",
+    "docs/D1B/D1B_评审修改报告.md": "8acb4748d354d2d39bf72ec7ca86669d2fd8aca24dc2f94e51bdfe4ec56306f9",
+    "include/retiree_roster/schema_types.hpp": "73217a0db2469c4349c4b54bb97fd1d3ea88f01ca82285027b95d10bf3bf7161",
+    "docs/退休人员名册打印小程序需求说明.docx": "7c0240282586690886fef84e20d42f6f5c800acae952d9b23697135909a152bb",
+    "docs/退休人员名册打印小程序开发规划.docx": "241e550d9c3c4de85342f4aa064833409ce79acbe940a0e29078d23599f90d72",
+    "reference/七阶段开发任务清单.xlsx": "dc4002bef4f7d8f4084536ede7e16f6072b63facaa12e5263694391e39c46b80",
+    "reference/员工信息表11111.xlsx": "427727f5d8062e7cba699b35d9262fb594b717d3dd699f811cbb7475112cf5b6"
   },
+  "repository_slug": "gaoyizhe934/retiree-roster-win7",
+  "required_machine_output_encoding": "utf-8",
   "review_head_source": "PR #3 当前head及提交后发布快照",
   "validation_subject": "当前CV4设计源及产物指纹；Git审查头由PR与提交后复核快照固定，不在生成物内追写自身SHA",
   "checks": [
@@ -49,7 +55,12 @@
     {
       "check": "文档本地链接有效",
       "pass": true,
-      "detail": "生成稿链接按输出目录解析；HTML基线链接固定到SP1内容锚点"
+      "detail": "先协议/绝对路径/仓库边界判断，再查询仓库内相对文件"
+    },
+    {
+      "check": "HTML链接协议与仓库边界",
+      "pass": true,
+      "detail": "a[href]仅HTTPS、锚点或仓库内相对路径；不依赖exists偶然拒绝协议"
     },
     {
       "check": "无未替换占位符",
@@ -85,6 +96,16 @@
       "check": "正式设计无内部技能术语",
       "pass": true,
       "detail": "设计与修订日期分离"
+    },
+    {
+      "check": "SVG与Mermaid节点一致",
+      "pass": true,
+      "detail": "比较实际SVG标签与完整Mermaid节点，不只计数；拒绝重复节点"
+    },
+    {
+      "check": "SVG与Mermaid路径一致",
+      "pass": true,
+      "detail": "核心路径、失败返回与条件标签逐项一致"
     }
   ],
   "commands": [

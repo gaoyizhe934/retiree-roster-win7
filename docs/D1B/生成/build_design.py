@@ -1,5 +1,6 @@
 """Rebuild/check the D1B CV4 design from main. Python standard library only."""
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
+import copy
 import hashlib
 import html
 import json
@@ -7,7 +8,7 @@ import re
 import sys
 import argparse
 from html.parser import HTMLParser
-from urllib.parse import unquote
+from urllib.parse import unquote, quote, urlsplit
 
 # --check must be read-only even when its regression helper is imported.
 sys.dont_write_bytecode = True
@@ -16,6 +17,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 OUT = HERE.parent
 EVIDENCE = OUT / '证据'
+REPOSITORY_SLUG = 'gaoyizhe934/retiree-roster-win7'
 SP1_BASELINE_ANCHOR = 'a0dfdd8e373ae90f765c20cf8c075a8754f674bd'
 CONTRACT_CANDIDATE = 'e8ad944e7c9c8df77c7c5fd883c4459a75270e92'
 PR2_REVIEW_HEAD = 'f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4'
@@ -30,8 +32,12 @@ BASELINES = {
     'reference/员工信息表11111.xlsx': '427727f5d8062e7cba699b35d9262fb594b717d3dd699f811cbb7475112cf5b6',
 }
 
-def write(path, value):
-    path.write_text(value, encoding='utf-8')
+ROOT_INPUT_FILES = ('include/retiree_roster/schema_types.hpp', *BASELINES)
+
+def configure_machine_output():
+    reconfigure = getattr(sys.stdout, 'reconfigure', None)
+    if reconfigure is not None:
+        reconfigure(encoding='utf-8', errors='strict')
 
 def json_text(value):
     return json.dumps(value, ensure_ascii=False, indent=2) + '\n'
@@ -48,9 +54,11 @@ def enum_members(header, name):
     return [part.split('=')[0].strip() for part in body.split(',') if part.strip()]
 
 def struct_members(header, name):
-    body = re.search(r'struct ' + name + r'\s*\{(.*?)\};', header, re.S).group(1)
+    body = function_body(header, 'struct ' + name)
     body = re.sub(r'//[^\n]*', '', body)
-    return re.findall(r'\b(\w+)\s*(?:=[^;]*)?;', body)
+    # Simple data declarations only; skip member function bodies and locals.
+    body = re.sub(r'\b\w+\([^;{}]*\)\s*(?:const\s*)?\{[^{}]*\}', '', body)
+    return re.findall(r'\b(\w+)\s*(?:=[^;]*|\{[^{};]*\})?;', body)
 
 def function_body(header, signature):
     """Extract a balanced C++ body; nested switches must not truncate checks."""
@@ -132,6 +140,38 @@ def make_controls(data, fields):
     pages['P22'] = {'name':'业务资料、独立Tag与只读系统区','controls':rows}
     return [row for page in pages.values() for row in page['controls']], field_rows
 
+def assemble_data(header, source_data):
+    """Single production assembly, also used as the mutation test baseline."""
+    data = copy.deepcopy(source_data)
+    controls, fields = make_controls(data, load_contract(header))
+    data.update({**BASE_IDENTITY, 'status': 'Draft; Gate 0 未通过',
+                 'fields': fields, 'controls': controls,
+                 'import_fields': [x for x in enum_members(header, 'ImportFieldId') if x != 'Unspecified'],
+                 'editable_fields': [x for x in enum_members(header, 'EditableFieldId') if x != 'Unspecified']})
+    tabs = []
+    for pid, page in data['pages'].items():
+        visible = [r for r in page['controls'] if r[2] not in ('STATIC', 'msctls_progress32')
+                   and r[0] not in PENDING_INTERFACE_CONTROLS
+                   and not (pid == 'P22' and '既有只读' in r[5])]
+        initial = {'P22': 'P22-F04', 'D10': 'D10-01', 'D20': 'D20-06', 'D90': 'D90-03',
+                   'P15': ''}.get(pid, visible[0][0] if visible else '')
+        create_only = [r[0] for r in page['controls'] if pid == 'P22'
+                       and r[2] not in ('STATIC', 'msctls_progress32') and '既有只读' in r[5]]
+        tabs.append({'page': pid, 'initial_focus': initial,
+                     'focus_rule': 'P15执行期间聚焦页面容器；完成后聚焦可用按钮' if pid == 'P15' else '无可操作控件时聚焦页面容器',
+                     'control_ids': [r[0] for r in visible], 'create_only_control_ids': create_only,
+                     'dynamic_rule': '新建将create_only项按控件编号插回原位置；Unknown年月日/只读/禁用项跳过；列出的条件组件仅启用时停靠',
+                     'enter': '多行仅换行；其余焦点按钮或安全查询／下一步；确认需明确聚焦',
+                     'esc': '按§2取消；写入中等待'})
+    data['tabs'] = tabs
+    data['flow_model'] = {
+        'nodes': {key: render_semantic_anchors(label, data) for key,label in data['flow_model']['nodes'].items()},
+        'edges': [[src,dst,render_semantic_anchors(label,data)] for src,dst,label in data['flow_model']['edges']],
+    }
+    templates, layouts = template_sections(data['templates'])
+    return {'data': data, 'fields': fields, 'controls': controls,
+            'tabs': tabs, 'templates': templates, 'layouts': layouts}
+
 def template_sections(templates):
     sections, layouts = [], []
     for template in templates:
@@ -161,22 +201,99 @@ def template_sections(templates):
 def check_row(name, passed, detail):
     return {'check':name,'pass':bool(passed),'detail':detail}
 
-def local_links(md):
-    return [link for link in re.findall(r'\[[^\]]+\]\(([^)]+)\)', md) if not link.startswith(('https://','#'))]
+def classify_href(raw_href):
+    """Reject protocols/absolute paths before any filesystem lookup."""
+    href = html.unescape(raw_href)
+    decoded = unquote(href)
+    if not decoded or any(ord(c) < 32 for c in decoded) or decoded != decoded.strip():
+        raise ValueError('无效链接')
+    if decoded.startswith(('/', '\\')) or '\\' in decoded or PureWindowsPath(decoded).drive:
+        raise ValueError('绝对路径或UNC链接被拒绝')
+    parsed = urlsplit(decoded)
+    if parsed.scheme:
+        if parsed.scheme.lower() != 'https' or not href.lower().startswith('https://'):
+            raise ValueError('链接协议被拒绝')
+        if not parsed.hostname or parsed.username or parsed.password:
+            raise ValueError('无效HTTPS链接')
+        return 'https', href, None
+    if parsed.netloc:
+        raise ValueError('网络路径被拒绝')
+    if decoded.startswith('#'):
+        return 'anchor', href, None
+    if not parsed.path:
+        raise ValueError('相对路径为空')
+    target = (OUT / parsed.path).resolve()
+    try:
+        target.relative_to(ROOT.resolve())
+    except ValueError as exc:
+        raise ValueError('链接逃出仓库') from exc
+    return 'relative', href, target
+
+def href_is_valid(href):
+    try:
+        kind, _, target = classify_href(href)
+        # exists() is reached only after repository containment is established.
+        return kind != 'relative' or target.exists()
+    except (ValueError, OSError):
+        return False
+
+def markdown_links(md):
+    return re.findall(r'\[[^\]]+\]\(([^)]+)\)', md)
+
+def baseline_href(href):
+    kind, safe_href, target = classify_href(href)
+    if kind == 'relative' and unquote(safe_href).startswith('../'):
+        suffix = urlsplit(safe_href)
+        return ('https://github.com/' + REPOSITORY_SLUG + '/blob/' + SP1_BASELINE_ANCHOR
+                + '/' + quote(target.relative_to(ROOT.resolve()).as_posix())
+                + ('?' + suffix.query if suffix.query else '')
+                + ('#' + suffix.fragment if suffix.fragment else ''))
+    return safe_href
 
 def inline(value):
     value = html.escape(value)
     value = re.sub(r'`([^`]+)`',r'<code>\1</code>',value)
     def link(match):
         label,url=match.groups()
-        if url.startswith(('../','../../')):
-            target=(OUT/url).resolve().relative_to(ROOT).as_posix()
-            from urllib.parse import quote
-            url='https://github.com/gaoyizhe934/retiree-roster-win7/blob/'+SP1_BASELINE_ANCHOR+'/'+quote(target)
-        return '<a href="'+url+'">'+label+'</a>'
+        try:
+            url = baseline_href(url)
+        except (ValueError, OSError):
+            return label  # Delivery checks reject the original Markdown input.
+        return '<a href="'+html.escape(url, quote=True)+'">'+label+'</a>'
     return re.sub(r'\[([^\]]+)\]\(([^)]+)\)',link,value).replace('&lt;br&gt;','<br>')
 
-def render_md(md):
+def render_semantic_anchors(md, data):
+    anchors = data.get('semantic_anchors', {})
+    def render(match):
+        value = anchors.get(match.group(1))
+        return value if isinstance(value, str) and value.strip() else match.group(0)
+    return re.sub(r'\{\{semantic\.([a-z0-9_]+)\}\}', render, md)
+
+def render_source_markdown(md, data):
+    md = render_semantic_anchors(md, data)
+    # Source is one directory below the generated document.
+    md = re.sub(r'(\]\()\.\./', r'\1', md)
+    def pinned_link(match):
+        label,url = match.groups()
+        try:
+            url = baseline_href(url)
+        except (ValueError,OSError):
+            pass  # Preserve invalid inputs for structured delivery rejection.
+        return '['+label+']('+url+')'
+    return re.sub(r'\[([^\]]+)\]\(([^)]+)\)', pinned_link, md)
+
+def parse_mermaid_flow(md):
+    match = re.search(r'```mermaid\s*\n(.*?)```', md, re.S)
+    nodes, edges = {}, []
+    if not match: return {'nodes': nodes, 'edges': edges}
+    for line in match.group(1).splitlines():
+        for node in re.finditer(r'(\w+)\s*(?:\(\[([^\]]+)\]\)|\[([^\]]+)\]|\{([^}]+)\})', line):
+            nodes[node.group(1)] = next(x for x in node.groups()[1:] if x is not None)
+        edge = re.match(r'\s*(\w+).*?-->(?:\|([^|]*)\|)?\s*(\w+)', line)
+        if edge: edges.append([edge.group(1), edge.group(3), edge.group(2) or ''])
+    return {'nodes': nodes, 'edges': edges}
+
+def render_md(md, flow_model):
     lines=md.splitlines(); parts=[]; toc=[]; i=0; heading=0
     while i<len(lines):
         line=lines[i]
@@ -185,7 +302,7 @@ def render_md(md):
             while i<len(lines) and not lines[i].startswith('```'):
                 block.append(lines[i]); i+=1
             text='<pre><code>'+html.escape('\n'.join(block))+'</code></pre>'
-            if lang=='mermaid': text=flow_svg()+'<details><summary>完整 Mermaid 图源</summary>'+text+'</details>'
+            if lang=='mermaid': text=flow_svg(flow_model)+'<details><summary>完整 Mermaid 图源</summary>'+text+'</details>'
             parts.append(text)
         elif line.startswith('#'):
             match=re.match(r'(#+) (.*)',line)
@@ -206,41 +323,50 @@ def render_md(md):
         i+=1
     return '\n'.join(parts),'\n'.join(toc)
 
-def flow_svg():
-    labels=['本地操作员／首页','P10 文件与 P11 表头','P12 Profile与逐列处置','P13 预检身份／revision','P14 问题与重复候选','D10 确认当前预检','P15 事务／失败重预检','P20／P21 人员详情','P22 业务／独立Tag','P30 显式条件→快照','P40／P41 模板值副本','P50 同快照预览','D50 打印／D51 xlsx','P51 本地反馈／脱敏']
-    positions=[(25+(i%3)*260,25+(i//3)*125) for i in range(len(labels))]
-    result=['<svg viewBox="0 0 810 700" role="img" aria-label="D1B主路径与快照流程"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#487174"/></marker></defs>']
-    for i in range(len(labels)-1):
-        x,y=positions[i];xx,yy=positions[i+1]
-        path=f'M{x+225},{y+32} L{xx},{yy+32}' if y==yy else f'M{x+112},{y+65} L{x+112},{y+95} L{xx+112},{y+95} L{xx+112},{yy}'
-        result.append(f'<path d="{path}" fill="none" stroke="#487174" stroke-width="2" marker-end="url(#arrow)"/>')
-    for label,(x,y) in zip(labels,positions):
-        result.append(f'<rect x="{x}" y="{y}" width="225" height="65" rx="8" fill="#edf4ef" stroke="#789c97"/><text x="{x+112}" y="{y+39}" text-anchor="middle" font-size="16" fill="#183d39">{label}</text>')
-    result.append('<text x="25" y="682" font-size="14">阶段概览；问题页可选，分支与取消／StaleSnapshot返回详见完整图与路径表。</text></svg>')
+def flow_svg(model):
+    nodes = model['nodes']; edges = model['edges']
+    positions = {ident:(25+(i%3)*260,25+(i//3)*125) for i,ident in enumerate(nodes)}
+    height = ((len(nodes)+2)//3)*125+70
+    result = [f'<svg viewBox="0 0 810 {height}" role="img" aria-label="D1B主路径与快照流程"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#487174"/></marker></defs>']
+    for src,dst,label in edges:
+        x,y=positions[src]; xx,yy=positions[dst]
+        result.append(f'<path data-from="{src}" data-to="{dst}" data-label="{html.escape(label,quote=True)}" d="M{x+112},{y+65} L{xx+112},{yy}" fill="none" stroke="#487174" stroke-width="1" marker-end="url(#arrow)"/>')
+    for ident,label in nodes.items():
+        x,y=positions[ident]
+        result.append(f'<rect x="{x}" y="{y}" width="225" height="65" rx="8" fill="#edf4ef" stroke="#789c97"/><text data-flow-node="{ident}" x="{x+112}" y="{y+39}" text-anchor="middle" font-size="16" fill="#183d39">{html.escape(label)}</text>')
+    result.append(f'<text x="25" y="{height-18}" font-size="14">节点与路径同完整Mermaid图；条件与返回规则见下方图源与路径表。</text></svg>')
     return ''.join(result)
 
-def make_html(md):
-    body,toc=render_md(md)
+def make_html(md,flow_model):
+    body,toc=render_md(md,flow_model)
     css='''body{margin:0;background:#f4f5f3;color:#22352f;font:17px/1.75 "Microsoft YaHei",sans-serif}aside{position:fixed;top:0;bottom:0;width:225px;background:#e6ece7;padding:20px;overflow:auto}aside strong{display:block;margin-bottom:16px}aside a{display:block;margin:12px 0;color:#25463b;text-decoration:none;font-size:15px}main{margin-left:265px}header{padding:25px 38px;background:#203d36;color:white}article{padding:26px 38px;max-width:1600px}h1{font-size:30px}h2{font-size:25px;margin-top:44px;padding-top:20px;border-top:2px solid #c4d5cb;scroll-margin-top:15px}h3{font-size:21px;margin-top:30px}p{max-width:1080px}a{color:#176650}code{font-family:Consolas,"Microsoft YaHei",monospace;background:#e9eeea;padding:1px 4px}pre{background:#f8faf8;border:1px solid #cad8cf;padding:20px;overflow:auto;line-height:1.65;font-size:15px}pre code{background:none;padding:0}.table-scroll{overflow:auto;margin:20px 0}table{border-collapse:collapse;width:100%;min-width:850px;font-size:15px}th,td{padding:11px 12px;border:1px solid #cad8cf;vertical-align:top;text-align:left}th{background:#dfeae3}tbody tr:nth-child(even){background:#edf3ed}td:first-child{white-space:nowrap}svg{width:100%;max-width:1050px;height:auto}details{margin:15px 0}@media(max-width:1000px){aside{position:static;width:auto}aside a{display:inline-block;margin:5px 12px}main{margin:0}article{padding:20px}}@media print{aside{display:none}main{margin:0}header{background:white;color:black}body{background:white}article{padding:0}.table-scroll{overflow:visible}table{min-width:0;font-size:9pt}h2,h3{break-after:avoid}tr{break-inside:avoid}details{display:none}}'''
     css += '''.table-scroll:focus-visible{outline:3px solid #176650;outline-offset:3px}.controls-table{table-layout:fixed;width:1940px;min-width:1940px}.controls-table th:nth-child(1){width:90px}.controls-table th:nth-child(2){width:130px}.controls-table th:nth-child(3){width:185px}.controls-table th:nth-child(4){width:290px}.controls-table th:nth-child(5){width:190px}.controls-table th:nth-child(6){width:265px}.controls-table th:nth-child(7){width:390px}.controls-table th:nth-child(8){width:200px}.controls-table td{overflow-wrap:anywhere}@media print{.controls-table{width:100%;min-width:0;table-layout:auto}.controls-table th:nth-child(n){width:auto}.controls-table td:first-child{white-space:normal}.controls-table td{overflow-wrap:anywhere}}'''
-    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>D1B 契约v4设计</title><style>'+css+'</style></head><body><aside><strong>D1B v0.3 复核材料</strong>'+toc+'</aside><main><header>ContractVersion 4 · Draft · Gate 0 未通过<br>Windows 7 SP1 / 6.1.7601 x86/x64 · 需求/规划 v2.1<br>作者静态设计证据；模板参数待甲方确认；非作者R未签认</header><article>'+body+'</article></main></body></html>'
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;self&#39;;"><meta name="viewport" content="width=device-width,initial-scale=1"><title>D1B 契约v4设计</title><style>'+css+'</style></head><body><aside><strong>D1B v0.3 复核材料</strong>'+toc+'</aside><main><header>ContractVersion 4 · Draft · Gate 0 未通过<br>Windows 7 SP1 / 6.1.7601 x86/x64 · 需求/规划 v2.1<br>作者静态设计证据；模板参数待甲方确认；非作者R未签认</header><article>'+body+'</article></main></body></html>'
 
 class Structure(HTMLParser):
     def __init__(self):
         super().__init__(); self.ids=set(); self.links=[]; self.tables=0; self.svg=0; self.external=[]; self.headings=[]; self.text=[]; self.heading=None
+        self.svg_nodes={}; self.svg_edges=[]; self.svg_node=None; self.svg_node_ids=[]
     def handle_starttag(self,tag,attrs):
         attrs=dict(attrs)
         if 'id' in attrs: self.ids.add(attrs['id'])
         if tag=='a': self.links.append(attrs.get('href',''))
+        if tag=='text' and 'data-flow-node' in attrs:
+            self.svg_node=attrs['data-flow-node']; self.svg_nodes[self.svg_node]=''
+            self.svg_node_ids.append(self.svg_node)
+        if tag=='path' and 'data-from' in attrs:
+            self.svg_edges.append([attrs['data-from'],attrs['data-to'],attrs.get('data-label','')])
         if tag=='table': self.tables+=1
         if tag=='svg': self.svg+=1
         if tag in ('script','link','img','iframe') and (attrs.get('src') or attrs.get('href')): self.external.append(attrs)
         if re.fullmatch(r'h[1-6]',tag): self.heading=[]
     def handle_endtag(self,tag):
+        if tag=='text': self.svg_node=None
         if re.fullmatch(r'h[1-6]',tag) and self.heading is not None:
             self.headings.append(''.join(self.heading)); self.heading=None
     def handle_data(self,data):
         self.text.append(data)
+        if getattr(self,'svg_node',None) is not None: self.svg_nodes[self.svg_node]+=data
         if self.heading is not None: self.heading.append(data)
 
 def static_checks(header,md,data,fields,tabs,layouts):
@@ -248,56 +374,68 @@ def static_checks(header,md,data,fields,tabs,layouts):
     tag_controls=[c for c in controls if c[0].startswith('P22-T')]
     imports=set(data['import_fields']); editable=set(data['editable_fields']); system={f['id'] for f in fields if f['system_managed']}
     checks=[]
+    def anchor_present(key):
+        value=data.get('semantic_anchors',{}).get(key)
+        return isinstance(value,str) and bool(value.strip()) and value in md
     def check(name,passed,detail): checks.append(check_row(name,passed,detail))
     check('34字段与契约枚举完整一致',len(fields)==34 and [f['id'] for f in fields]==enum_members(header,'PersonFieldId'),'FieldSpec与PersonFieldId逐项及顺序核对')
     check('字段能力由契约解析',imports=={f['id'] for f in fields if f['source_importable']} and editable=={f['id'] for f in fields if f['user_editable']},'ImportFieldId/EditableFieldId与source_importable/user_editable一致')
     check('系统字段边界',system=={'PersonId','PersonCode','CreatedAt','UpdatedAt','ImportBatchId','LastModifiedBy'} and not(imports&system) and not(editable&system),'6个系统专管字段无导入和编辑入口')
     check('拼音创建与编辑边界','PinyinSortKey' not in imports and 'PinyinSortKey' in editable and 'PinyinSortKey' not in system and 'pinyin_sort_key' not in struct_members(header,'PersonCreateInput'),'服务初始化、禁止导入、后续可编辑')
     check('唯一导入必填', [f['id'] for f in fields if f['required_for_import']]==['FullName'],'LifeStatus必须解析，独立于required_for_import元数据')
-    check('PersonId/PersonCode/工号三分离',all(x in {f['id'] for f in fields} for x in ('PersonId','PersonCode','EmployeeNo')) and '工号，可空、可重复' in md and 'PersonCode 是业务可见固定编号' in md,'工号不作为内部ID或固定编号')
+    check('PersonId/PersonCode/工号三分离',all(x in {f['id'] for f in fields} for x in ('PersonId','PersonCode','EmployeeNo')) and (anchor_present('person_identity_1')) and (anchor_present('person_identity_2')),'工号不作为内部ID或固定编号')
     check('Person输入不收系统字段',not(set(struct_members(header,'PersonCreateInput')) & {f['key'] for f in fields if f['system_managed']}),'新增仅PersonCreateInput，编辑仅FieldChange/EditableFieldId')
-    check('Tag不混入Person',not({'TagCodes','IsHighAgeMarked','CareFlags'}&{f['id'] for f in fields}) and 'TagMutation' in md and len(tag_controls)==7,'独立代码、值、适用年、添加修改删除、只读审计')
-    check('Tag年度与审计边界',set(struct_members(header,'TagMutation'))=={'tag_code','tag_value','applicable_year','remove'} and '不跨年继承' in md and tag_controls[-1][2]=='STATIC','updated_at/updated_by无提交入口；高龄不持久化')
-    check('日期精度覆盖',sum(f['value_kind']=='Date' for f in fields)==6 and all(len(f['control_ids'])==4 for f in fields if f['value_kind']=='Date') and '不能参与比较' in md,'六个DateValue字段各有精度与年月日组件；未知不为0年龄')
-    check('全列三种处置',enum_members(header,'ImportColumnDisposition')==['PersonField','BatchRawOnly','Unsupported'] and all(x in md for x in ('BatchRawOnly','目标必须 Unspecified','Unsupported 是默认')),'默认Unsupported；BatchRawOnly本机原值不进Person或公共日志')
-    check('无冻结Profile自动直入', '当前没有已冻结 Profile' in md and '唯一匹配已冻结 Profile 且无缺失、重复、歧义、顺序变化、未知列' in md,'仅已冻结唯一匹配可预填；所有路径预检')
-    check('确认仅绑定revision',set(struct_members(header,'ConfirmImportRequest'))=={'meta','batch_id','preview_revision','confirmed_by'} and all(x in md for x in ('成功revision不可重复确认','mapping_version','immutable checked copy')),'预检不可变，变化获得新revision，确认无第二套语义')
-    check('FilterSpec全能力',enum_members(header,'RosterScenario')==['Custom','Chongyang','Party50'] and all(x in md for x in ('as_of_date','accepted_values','has_minimum','field_match','tag_match','require_party_member','Unspecified不能被当成LivingOnly')),'三场景、显式状态、年龄口径、集合/下限、两组All/Any、八种比较')
+    check('Tag不混入Person',not({'TagCodes','IsHighAgeMarked','CareFlags'}&{f['id'] for f in fields}) and len(tag_controls)==7,'独立代码、值、适用年、添加修改删除、只读审计')
+    check('Tag年度与审计边界',set(struct_members(header,'TagMutation'))=={'tag_code','tag_value','applicable_year','remove'} and (anchor_present('tag_year_1')) and tag_controls[-1][2]=='STATIC','updated_at/updated_by无提交入口；高龄不持久化')
+    check('日期精度覆盖',sum(f['value_kind']=='Date' for f in fields)==6 and all(len(f['control_ids'])==4 for f in fields if f['value_kind']=='Date') and (anchor_present('unknown_date_1')),'六个DateValue字段各有精度与年月日组件；未知不为0年龄')
+    check('全列三种处置',enum_members(header,'ImportColumnDisposition')==['PersonField','BatchRawOnly','Unsupported'] and (anchor_present('column_disposition_1') and anchor_present('column_disposition_2') and anchor_present('column_disposition_3')),'默认Unsupported；BatchRawOnly本机原值不进Person或公共日志')
+    check('无冻结Profile自动直入', (anchor_present('profile_matching_1')) and (anchor_present('profile_matching_2')),'仅已冻结唯一匹配可预填；所有路径预检')
+    check('确认仅绑定revision',set(struct_members(header,'ConfirmImportRequest'))=={'meta','batch_id','preview_revision','confirmed_by'} and (anchor_present('revision_confirmation_1') and anchor_present('revision_confirmation_2') and anchor_present('revision_confirmation_3')),'预检不可变，变化获得新revision，确认无第二套语义')
+    check('FilterSpec全能力',enum_members(header,'RosterScenario')==['Custom','Chongyang','Party50'] and {'as_of_date','field_match','tag_match','require_party_member','age','party_seniority'} <= set(struct_members(header,'FilterSpec')) and enum_members(header,'LifeStatusFilter')[0]=='Unspecified','三场景、显式状态、年龄口径、集合/下限、两组All/Any、八种比较')
     check('无最大年龄输入',not any(c[1]=='最大年龄' or c[3].endswith('.maximum') for c in controls if c[0].startswith('P30-')) and 'maximum' not in struct_members(header,'YearCountCondition'),'当前只有集合与含边界下限')
     check('P40/P50消费快照',all('snapshot_id' in ' '.join(str(r) for r in data['pages'][pid]['controls']) for pid in ('P40','P50')) and all('snapshot_id' in struct_members(header,name) and 'filter' not in struct_members(header,name) for name in ('PreviewRosterRequest','PrintRosterRequest','ExportRosterRequest')),'三输出不再接收FilterSpec')
-    check('快照失效范围',all(x in md for x in ('StaleSnapshot','人员、Tag、拼音键、导入、恢复、迁移','恢复不能复用旧版本号','同一临界区')),'失效禁输出，回P30；不会混入新数据')
+    check('快照失效范围',(anchor_present('snapshot_invalidation_1') and anchor_present('snapshot_invalidation_2') and anchor_present('snapshot_invalidation_3') and anchor_present('snapshot_invalidation_4')),'失效禁输出，回P30；不会混入新数据')
     check('T03编号与派生列',any(c['field']=='PersonCode' for c in templates[2]['columns']) and not any(c['field']=='PersonId' for c in templates[2]['columns']) and any(c['derived_field']=='PartySeniorityYears' for c in templates[2]['columns']),'固定编号PersonCode；年度年龄及党龄从快照读取')
     check('模板契约与来源',all(set(struct_members(header,'PrintTemplate'))<=set(t) for t in templates) and all(c['source'] in enum_members(header,'TemplateColumnSource') for t in templates for c in t['columns']),'模板所有成员、四来源；候选JSON另有status说明')
     check('签字是独立列',all(any(c['source']=='BlankSignature' for c in t['columns']) for t in templates) and all('add_signature_column' not in t for t in templates),'统一columns[]，无第二个签字开关')
-    check('物理尺寸整数与人数语义',all(isinstance(t['row_height_tenth_mm'],int) and all(isinstance(v,int) for v in t['margins'].values()) and all(isinstance(c['width_tenth_mm'],int) for c in t['columns']) for t in templates) and 'rows_per_page=0' in md,'内部0.1mm，UI毫米转换，正数人数校验')
+    check('物理尺寸整数与人数语义',all(isinstance(t['row_height_tenth_mm'],int) and all(isinstance(v,int) for v in t['margins'].values()) and all(isinstance(c['width_tenth_mm'],int) for c in t['columns']) for t in templates) and (anchor_present('template_rows_1')),'内部0.1mm，UI毫米转换，正数人数校验')
     check('模板算术范围',all(c['pass'] for c in layouts),json.dumps(layouts,ensure_ascii=False))
     check('控件编号及八项记录',len(ids)==len(set(ids)) and all(len(c)==8 and all(str(v).strip() for v in c) for c in controls),f'{len(controls)}项；全部编号、名称、类型、用途、默认、启用、校验、错误')
     interactive={c[0] for c in controls if c[2] not in ('STATIC','msctls_progress32') and c[0] not in PENDING_INTERFACE_CONTROLS}
     check('Tab覆盖操作控件',interactive=={cid for row in tabs for cid in row['control_ids']+row.get('create_only_control_ids',[])},f'{len(interactive)}项，创建/编辑模式分开；日期组件只在活动精度启用时停靠')
+    check('初始焦点属于本页控件',all(
+        row['initial_focus'] in set(row['control_ids'] + row.get('create_only_control_ids', []))
+        if row['initial_focus'] else (not (row['control_ids'] + row.get('create_only_control_ids', [])) or row['page'] == 'P15')
+        for row in tabs), '无操作控件聚焦容器；P15执行期明确使用容器，完成后聚焦可用按钮')
     r_rows=re.findall(r'^\| RV\d{2}.*\| 待 R 复核 \|$',md,re.M)
-    check('当前Draft与R未代签',len(r_rows)==9 and 'ContractVersion 4' in md and 'DatabaseSchemaVersion 独立且尚未分配' in md and 'Gate 0 未通过' in md,'九脚本待R，契约与数据库版本分开，未声明Gate通过')
+    check('当前Draft与R未代签',len(r_rows)==9 and (anchor_present('review_status_1')) and (anchor_present('review_status_2')) and (anchor_present('review_status_3')),'九脚本待R，契约与数据库版本分开，未声明Gate通过')
     check('固定SP1内容锚点契约指纹',hashlib.sha256(header.encode('utf-8')).hexdigest()==HEADER_SHA,'固定SP1内容锚点的UTF-8文本SHA-256；不声称冻结Schema')
-    for path,digest in BASELINES.items(): check('原始资料指纹：'+Path(path).name,hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest,'与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置')
+    for path,digest in BASELINES.items():
+        target = ROOT / path
+        check('原始资料指纹：'+Path(path).name,
+              target.is_file() and hashlib.sha256(target.read_bytes()).hexdigest()==digest,
+              '与 OD-0002 修订后的当前受控 v2.1 基线一致' if target.is_file() else '文件缺失：'+path)
     check('CV4版本与基线身份',re.search(r'kCurrentContractVersion\s*=\s*4U',header) and data['contract_version']==4 and SP1_BASELINE_ANCHOR in md and 'ContractVersion 3' not in md and '279a204' not in md and 'PR2尚未合并' not in md,'固定SP1内容锚点、contract candidate和PR2 review head分别记录')
     for enum,count in (('ImportFieldId',27),('EditableFieldId',28)):
         check(enum+'显式映射完整',len(enum_members(header,enum))==count+1 and explicit_mapping(header,enum),f'{count}个命名case；Unspecified/forged/default拒绝；nullptr保护')
-    check('UI不依赖枚举数值identity',all(x in md for x in ('不允许整数 cast 成 PersonFieldId','不依赖 enum 数值 identity','forged／unknown／Unspecified','try_to_person_field(EditableFieldId')),'UI提交输入域枚举，服务显式映射后查询FieldSpec')
+    check('UI不依赖枚举数值identity',(anchor_present('enum_boundary_1') and anchor_present('enum_boundary_2') and anchor_present('enum_boundary_3') and anchor_present('enum_boundary_4')),'UI提交输入域枚举，服务显式映射后查询FieldSpec')
     change = function_body(header,'is_valid_field_change(')
-    check('FieldChange日期payload', 'return change.value.empty() && change.date_value.is_known();' in change and all(x in md for x in ('日期赋值','有效且已知的 Year','Text／Enum 赋值混入日期均拒绝')),'Date不得用文本或非规范Unknown作赋值')
-    check('FieldChange文本枚举payload','case FieldValueKind::Text:' in change and 'case FieldValueKind::EnumCode:' in change and 'return empty_date;' in change and '使用 value' in md,'Text/Enum必须canonical Unknown date，业务值域仍待D3')
-    check('clear规范Unknown', 'if (change.clear_value) { return change.value.empty() && empty_date; }' in change and 'DatePrecision::Unknown' in change and 'change.date_value.is_valid()' in change and '年月日全0' in md,'clear必须空文本+规范未知；Identifier/Timestamp不可编辑')
+    check('FieldChange日期payload', 'return change.value.empty() && change.date_value.is_known();' in change and (anchor_present('date_payload_1') and anchor_present('date_payload_2') and anchor_present('date_payload_3')),'Date不得用文本或非规范Unknown作赋值')
+    check('FieldChange文本枚举payload','case FieldValueKind::Text:' in change and 'case FieldValueKind::EnumCode:' in change and 'return empty_date;' in change and (anchor_present('text_payload_1')),'Text/Enum必须canonical Unknown date，业务值域仍待D3')
+    check('clear规范Unknown', 'if (change.clear_value) { return change.value.empty() && empty_date; }' in change and 'DatePrecision::Unknown' in change and 'change.date_value.is_valid()' in change and (anchor_present('clear_payload_1')),'clear必须空文本+规范未知；Identifier/Timestamp不可编辑')
     by_field={f['id']:f for f in fields}
     check('FullName禁止UI清空',by_field['FullName']['ui_override'].get('ordinary_clear_allowed') is False and 'UI禁止普通清空' in by_field['FullName']['validation'],'结构检查不代替必填业务验证')
-    check('既有状态日期单入口',all(by_field[f]['ui_override'].get('existing_readonly') is True and by_field[f]['ui_override'].get('correction_route')=='D20' for f in ('LifeStatus','DeathDate')) and by_field['LifeStatus']['ui_override'].get('ordinary_clear_allowed') is False and 'D20 确认默认禁用' in md,'新建按业务校验，既有只读；更正待Q04批准')
+    check('既有状态日期单入口',all(by_field[f]['ui_override'].get('existing_readonly') is True and by_field[f]['ui_override'].get('correction_route')=='D20' for f in ('LifeStatus','DeathDate')) and by_field['LifeStatus']['ui_override'].get('ordinary_clear_allowed') is False and next(c for c in controls if c[0]=='D20-05')[4].startswith('禁用'),'新建按业务校验，既有只读；更正待Q04批准')
+    check('人数正文单一来源',anchor_present('snapshot_count_single_source'),'派生人数的用户说明必须出现在正文')
     roster_members=struct_members(header,'RosterResult')
     check('RosterResult没有可写人数','total_count' not in roster_members and re.search(r'std::size_t total_count\(\) const\s*\{\s*return rows.size\(\);\s*\}',header),'total_count()只从rows.size()派生')
-    check('人数UI派生读取',all('total_count()' in ' '.join(c) for p in ('P30','P40','P50') for c in data['pages'][p]['controls'] if c[0] in ('P30-35','P40-02','P50-01')) and '不存在第二份可写人数状态' in md,'P30/P40/P50无独立人数状态')
+    check('人数UI派生读取',all('total_count()' in ' '.join(c) for p in ('P30','P40','P50') for c in data['pages'][p]['controls'] if c[0] in ('P30-35','P40-02','P50-01')),'P30/P40/P50无独立人数状态')
     year=function_body(header,'is_valid_year_count_condition(')
-    check('YearCount空启用拒绝','condition.accepted_values.empty() && !condition.has_minimum' in year and 'enabled=true空集合无minimum' in md,'空集合且无下限不合法，关闭不约束')
-    check('YearCount负值拒绝', 'condition.minimum < 0' in year and 'if (value < 0)' in year and '即使 has_minimum=false' in md,'enabled时minimum及每个accepted值均非负')
-    check('YearCount仅shape','is_valid_year_count_condition()' in md and '不是完整 FilterSpec validator' in md,'target_year/as_of_date/status/scenario/field/tag由D4完整验证')
-    check('预检caller proposal边界',all(x in md for x in ('caller proposal','Application Service 自己读取源文件','approved Profile','重复 Person target','可信 mapping_version','immutable checked data copy')),'P12调用方版本和配置不构成可信批准证据')
-    check('Confirm源身份与checked copy',all(x in md for x in ('可重读源字节验证 SHA/identity','入库只消费 immutable checked copy','源缺失或变化必须拒绝')) and '确认不重读原文件' not in md and '不能重读可能已变化' not in md,'源重读仅验证身份，禁止替换已检数据')
+    check('YearCount空启用拒绝','condition.accepted_values.empty() && !condition.has_minimum' in year and (anchor_present('year_count_empty_1')),'空集合且无下限不合法，关闭不约束')
+    check('YearCount负值拒绝', 'condition.minimum < 0' in year and 'if (value < 0)' in year and (anchor_present('year_count_nonnegative_1')),'enabled时minimum及每个accepted值均非负')
+    check('YearCount仅shape',(anchor_present('year_count_shape_1')) and (anchor_present('year_count_shape_2')),'target_year/as_of_date/status/scenario/field/tag由D4完整验证')
+    check('预检caller proposal边界',(anchor_present('preview_trust_1') and anchor_present('preview_trust_2') and anchor_present('preview_trust_3') and anchor_present('preview_trust_4') and anchor_present('preview_trust_5') and anchor_present('preview_trust_6')),'P12调用方版本和配置不构成可信批准证据')
+    check('Confirm源身份与checked copy',(anchor_present('confirm_source_identity') and anchor_present('confirmation_identity_2') and anchor_present('confirmation_identity_3')) and '确认不重读原文件' not in md and '不能重读可能已变化' not in md,'源重读仅验证身份，禁止替换已检数据')
     allow=set(data['filterable_fields'])
     excluded=system|{'NationalId','Phone','RelativePhone','HomeAddress','PersonCode','EmployeeNo','Remark'}
     check('筛选白名单排除系统敏感',bool(allow) and allow<={f['id'] for f in fields} and not allow&excluded and all(by_field[x]['value_kind'] in ('Text','EnumCode') for x in allow),'候选白名单待A/R；编号/工号精确与日期范围待决定')
@@ -307,21 +445,22 @@ def static_checks(header,md,data,fields,tabs,layouts):
     reports=[c for c in controls if c[0] in ('P14-04','P15-04')]
     check('未闭环报告默认禁用',len(reports)==2 and all(c[4].startswith('禁用') and 'D3接口对齐' in c[4] for c in reports),'Q11待定方式/格式/ExportLog/脱敏，B不增正式接口')
     search=next(c for c in controls if c[0]=='P20-01')
-    check('搜索语义候选待确认','候选UI语义' in search[3] and '待A/R确认' in search[3] and '空 search_text' in md,'不从search_text推定字段匹配与排序')
+    check('搜索语义候选待确认','候选UI语义' in search[3] and '待A/R确认' in search[3] and (anchor_present('search_scope_1')),'不从search_text推定字段匹配与排序')
     q_rows='\n'.join(re.findall(r'^\| Q(?:01|02|05) \|.*$',md,re.M))
-    check('SP1目标名称','Windows 7 SP1' in md,'目标OS名称引用OD-0002')
-    check('SP1系统版本','6.1.7601' in md,'版本7601，不代替Guest实测')
+    check('SP1目标名称',(anchor_present('target_os_1')),'目标OS名称引用OD-0002')
+    check('SP1系统版本',(anchor_present('target_os_version_1')),'版本7601，不代替Guest实测')
     check('当前正文无RTM目标','Win7 RTM' not in md and 'Windows 7 RTM' not in md,'历史RTM证据留main历史记录')
     check('当前正文无7600目标','6.1.7600' not in md,'当前目标仅7601')
-    check('需求v2.1来源','需求说明 v2.1' in md,'受控需求链接与版本')
-    check('规划v2.1来源','开发规划 v2.1' in md,'受控规划链接与版本')
-    check('OD-0002来源','OD-0002-Windows7-SP1目标基线.md' in unquote(md) and 'OD-0002 只覆盖目标 OS 条款' in md,'仅覆盖OS，DTO/API/CV/主发行架构不变')
-    check('SP1交接来源','SP1_BASELINE_HANDOFF.md' in md,'跨轨来源与PR整合要求')
+    check('需求v2.1来源',(anchor_present('requirements_version_1')),'受控需求链接与版本')
+    check('规划v2.1来源',(anchor_present('plan_version_1')),'受控规划链接与版本')
+    check('OD-0002来源','OD-0002-Windows7-SP1目标基线.md' in unquote(md) and (anchor_present('owner_os_scope_1')),'仅覆盖OS，DTO/API/CV/主发行架构不变')
+    check('SP1交接来源',(anchor_present('baseline_handoff_1')),'跨轨来源与PR整合要求')
     check('Q项无第二业务工作簿未决',not any(x in q_rows for x in ('第二份样表待确认','第二份业务工作簿待确认','第二份脱敏样表','两区域与第二样表','第二样表、')),'业务范围已决定；数据级脱敏测试样本仍待')
     check('Q项无两区域性质未决',not any(x in q_rows for x in ('行1/行3性质待确认','行1／行3性质待确认','两区域性质待确认','第1行额外与重复字段、第二份样表待确认')),'Q2-A决定两套首期Source Profile')
-    check('Q1Q2当前Owner决定',all(x in q_rows for x in ('Q1-B','Q2-A','首期只有当前业务工作簿','P1','P2')),'单工作簿与两Profile范围分别确认')
+    check('Q1Q2当前Owner决定',data['source_profile_scope']['owner_decisions']==['Q1-B','Q2-A'] and data['source_profile_scope']['business_workbooks']==1 and {p['id'] for p in data['source_profile_scope']['profiles']}=={'P1','P2'},'单工作簿与两Profile范围分别确认')
     scope=data.get('source_profile_scope',{})
-    check('SourceProfile范围与冻结区分',scope.get('owner_decisions')==['Q1-B','Q2-A'] and scope.get('business_workbooks')==1 and scope.get('profiles')==[{'id':'P1','worksheet':'Sheet1','header_row':1,'nonempty_headers':52},{'id':'P2','worksheet':'Sheet1','header_row':3,'nonempty_headers':23}] and scope.get('import_profile_status')=='未冻结' and scope.get('data_status')=='HEADER-ONLY' and scope.get('data_rows')==0 and scope.get('pending_unsupported')==5 and scope.get('pending_mapping_semantics')==8 and 'ImportProfile 未冻结' in q_rows,'两Source Profile范围已确认；冻结/逐列语义仍待A/D3/R')
+    check('SourceProfile范围与冻结区分',scope.get('owner_decisions')==['Q1-B','Q2-A'] and scope.get('business_workbooks')==1 and scope.get('profiles')==[{'id':'P1','worksheet':'Sheet1','header_row':1,'nonempty_headers':52},{'id':'P2','worksheet':'Sheet1','header_row':3,'nonempty_headers':23}] and scope.get('import_profile_status')=='未冻结' and scope.get('data_status')=='HEADER-ONLY' and scope.get('data_rows')==0 and scope.get('pending_unsupported')==5 and scope.get('pending_mapping_semantics')==8,'两Source Profile范围已确认；冻结/逐列语义仍待A/D3/R')
+    check('语义锚点完整输出',all(anchor_present(key) for key in data['semantic_anchors']) and '{{semantic.' not in md,'语义文本来自设计数据，正文与检查共用；结构能力直接核对契约和UI数据')
     return checks
 
 def delivery_checks(md,html_doc,data,all_public):
@@ -336,60 +475,48 @@ def delivery_checks(md,html_doc,data,all_public):
     text=''.join(doc.text)
     check('34字段与Tag完整显示',all(f['id'] in text and all(cid in text for cid in f['control_ids']) for f in data['fields']) and all(f'P22-T{i:02}' in text for i in range(1,8)),'全部字段能力、日期组件、独立Tag控件')
     check('Q/RV/T完整',all(f'Q{i:02}' in text for i in range(1,14)) and all(f'RV{i:02}' in text for i in range(1,10)) and all(t['template_id'] in text for t in data['templates']),'13对接项、9复核脚本、3模板')
-    check('文档本地链接有效',all((OUT/url).exists() for url in local_links(md)),'生成稿链接按输出目录解析；HTML基线链接固定到SP1内容锚点')
-    check('无未替换占位符','<!--' not in md,'控件/字段/Tab/模板/静态检查均已生成')
+    check('文档本地链接有效',all(href_is_valid(url) for url in markdown_links(md)),'先协议/绝对路径/仓库边界判断，再查询仓库内相对文件')
+    check('HTML链接协议与仓库边界',all(href_is_valid(url) for url in doc.links),'a[href]仅HTTPS、锚点或仓库内相对路径；不依赖exists偶然拒绝协议')
+    check('无未替换占位符','<!--' not in md and '{{semantic.' not in md,'控件/字段/Tab/模板/静态检查均已生成')
     check('公共材料无私有绝对路径',not re.search(r'(?i)(?:(?<![a-z])[a-z]:[\\/]|file://|\\\\[^\s]+\\)',all_public),'README、正文、HTML、交接、修改报告及JSON证据全量扫描；HTTPS不误判为盘符')
     check('公共材料无真实敏感值',not re.search(r'(?<!\d)\d{17}[0-9Xx](?!\d)|(?<!\d)1[3-9]\d{9}(?!\d)',all_public),'无完整证号或大陆手机号；没有导入人员原值')
     check('未虚报功能/Gate', '待非作者 R 复核' in md and '代码／VM／事务／GDI／xlsx版式及实物未运行' in md and 'Gate 0 未通过' in md,'仅作者静态证据，非产品兼容验收')
     check('三模板全值同步',all(str(c['width_tenth_mm']) in text and c['display_name'] in text and c['source'] in text for t in data['templates'] for c in t['columns']),'MD/HTML由同一JSON模板源渲染')
     check('长表阅读与键盘横移',html_doc.count('class="controls-table"')==len(data['pages']) and 'width:1940px' in html_doc and 'tabindex="0" role="region"' in html_doc,'控件表有明确列宽，滚动区可键盘聚焦；打印恢复100%宽度')
     check('正式设计无内部技能术语',not any(x in md for x in ('ask-matt','beginning-work')) and '设计日期：2026-10-01' in md and '最后修订：2026-10-03' in md,'设计与修订日期分离')
+    mermaid=parse_mermaid_flow(md); model=data['flow_model']
+    check('SVG与Mermaid节点一致',doc.svg_nodes==model['nodes']==mermaid['nodes'] and len(doc.svg_node_ids)==len(doc.svg_nodes),'比较实际SVG标签与完整Mermaid节点，不只计数；拒绝重复节点')
+    check('SVG与Mermaid路径一致',sorted(doc.svg_edges)==sorted(model['edges'])==sorted(mermaid['edges']),'核心路径、失败返回与条件标签逐项一致')
     return checks
 
 def generate_products():
     """Pure rebuild: return exact output bytes without touching deliverables."""
-    header=(ROOT/'include/retiree_roster/schema_types.hpp').read_text(encoding='utf-8')
+    missing=[rel for rel in ROOT_INPUT_FILES if not (ROOT/rel).is_file()]
+    if missing:
+        return {}, {'static_checks':len(missing),'delivery_checks':0,'negative_checks':0,
+                    'failed':[check_row('输入文件缺失：'+Path(rel).name,False,'文件缺失：'+rel) for rel in missing]}
+    header=(ROOT/ROOT_INPUT_FILES[0]).read_text(encoding='utf-8')
     data=json.loads((HERE/'设计数据.json').read_text(encoding='utf-8'))
-    fields=load_contract(header)
-    controls,field_rows=make_controls(data,fields)
-    data.update({**BASE_IDENTITY,'status':'Draft; Gate 0 未通过','fields':field_rows,'controls':controls,
-                 'import_fields':[x for x in enum_members(header,'ImportFieldId') if x!='Unspecified'],
-                 'editable_fields':[x for x in enum_members(header,'EditableFieldId') if x!='Unspecified']})
-    tabs=[]; sections=[]
-    for pid,page in data['pages'].items():
-        sections.append('### '+pid+' '+page['name']+'\n\n'+table(['编号','名称','Win32类型','用途','默认','启用条件','校验','错误提示'],page['controls']))
-        visible=[r for r in page['controls'] if r[2] not in ('STATIC','msctls_progress32') and r[0] not in PENDING_INTERFACE_CONTROLS and not (pid=='P22' and '既有只读' in r[5])]
-        initial={'P22':'P22-F04','D10':'D10-01','D20':'D20-06','D90':'D90-03','P15':'页面容器；执行完成后聚焦可用按钮'}.get(pid,visible[0][0] if visible else '页面容器')
-        create_only=[r[0] for r in page['controls'] if pid=='P22' and r[2] not in ('STATIC','msctls_progress32') and '既有只读' in r[5]]
-        tabs.append({'page':pid,'initial_focus':initial,'control_ids':[r[0] for r in visible], 'create_only_control_ids':create_only,
-                     'dynamic_rule':'新建将create_only项按控件编号插回原位置；Unknown年月日/只读/禁用项跳过；列出的条件组件仅启用时停靠',
-                     'enter':'多行仅换行；其余焦点按钮或安全查询／下一步；确认需明确聚焦','esc':'按§2取消；写入中等待'})
-    data['tabs']=tabs
-    templates,layouts=template_sections(data['templates'])
-    md=(HERE/'设计正文.md').read_text(encoding='utf-8')
-    # Source lives one level below final docs; normalize links when generating.
-    md=re.sub(r'(\]\()\.\./',r'\1',md)
-    # Pin baseline URLs so the standalone reading copy resolves its references.
-    def baseline_link(match):
-        label,url=match.groups()
-        if url.startswith('../'):
-            from urllib.parse import quote
-            target=(OUT/url).resolve().relative_to(ROOT).as_posix()
-            url='https://github.com/gaoyizhe934/retiree-roster-win7/blob/'+SP1_BASELINE_ANCHOR+'/'+quote(target)
-        return '['+label+']('+url+')'
-    md=re.sub(r'\[([^\]]+)\]\(([^)]+)\)',baseline_link,md)
+    assembled=assemble_data(header,data)
+    data=assembled['data']; field_rows=assembled['fields']; fields=field_rows
+    controls=assembled['controls']; tabs=assembled['tabs']; layouts=assembled['layouts']
+    sections=['### '+pid+' '+page['name']+'\n\n'+table(
+        ['编号','名称','Win32类型','用途','默认','启用条件','校验','错误提示'],page['controls'])
+        for pid,page in data['pages'].items()]
+    templates=assembled['templates']
+    md=render_source_markdown((HERE/'设计正文.md').read_text(encoding='utf-8'),data)
     yes=lambda value:'是' if value else '否'
     replacements={
         '<!-- CONTROLS -->':'\n\n'.join(sections),
         '<!-- FIELDS -->':table(['FieldId','契约键／类型','名称／控件','导入必填','敏感','source_importable','user_editable','system_managed','默认打印','UI条件／校验'],
             [[f['id'],f["key"]+'／'+f['value_kind'],f['label']+'／'+','.join(f['control_ids']),*[yes(f[k]) for k in ('required_for_import','sensitive','source_importable','user_editable','system_managed','printable_by_default')],f['ui_rule']+'；'+f['validation']] for f in field_rows]),
-        '<!-- TAB -->':table(['页面','初始焦点','Tab候选顺序，Shift+Tab逆序','模式与精度规则','Enter','Esc'],[[r['page'],r['initial_focus'],' → '.join(r['control_ids']),r['dynamic_rule']+'；仅新建：'+','.join(r['create_only_control_ids']),r['enter'],r['esc']] for r in tabs])+ '\n\nD50／D51／文件／覆盖／帮助／历史：系统原生Tab顺序，默认取消，返回触发控件。',
+        '<!-- TAB -->':table(['页面','初始焦点','Tab候选顺序，Shift+Tab逆序','模式与精度规则','Enter','Esc'],[[r['page'],r['initial_focus'] or r['focus_rule'],' → '.join(r['control_ids']),r['dynamic_rule']+'；仅新建：'+','.join(r['create_only_control_ids']),r['enter'],r['esc']] for r in tabs])+ '\n\nD50／D51／文件／覆盖／帮助／历史：系统原生Tab顺序，默认取消，返回触发控件。',
         '<!-- TEMPLATES -->':templates,
     }
     for placeholder,value in replacements.items(): md=md.replace(placeholder,value)
     checks=static_checks(header,md,data,field_rows,tabs,layouts)
     md=md.replace('<!-- VALIDATION -->',table(['作者检查','结果','范围'],[[r['check'],'通过' if r['pass'] else '失败',r['detail']] for r in checks]))
-    html_doc=make_html(md)
+    html_doc=make_html(md,data['flow_model'])
     products={
         OUT/'D1B_使用流程与模板设计.md':md,
         OUT/'D1B_使用流程与模板设计.html':html_doc,
@@ -404,9 +531,13 @@ def generate_products():
     negative = test_build_design.negative_results(sys.modules[__name__])
     products[EVIDENCE/'生成器反例核查结果.json']=json_text({'scope':'当前生成器的故意损坏输入反例，非C++/产品测试','checks':negative})
     inputs={}
-    for path in (HERE/'设计正文.md',HERE/'设计数据.json',HERE/'build_design.py',HERE/'test_build_design.py',OUT/'README.md',OUT/'D1B_交付与审核记录.md',OUT/'D1B_评审修改报告.md',ROOT/'include/retiree_roster/schema_types.hpp'):
-        inputs[path.relative_to(ROOT).as_posix()]=hashlib.sha256(path.read_bytes()).hexdigest()
+    input_paths=[HERE/'设计正文.md',HERE/'设计数据.json',HERE/'build_design.py',HERE/'test_build_design.py',
+                 OUT/'README.md',OUT/'D1B_交付与审核记录.md',OUT/'D1B_评审修改报告.md']
+    input_paths.extend(ROOT/rel for rel in ROOT_INPUT_FILES)
+    for path in input_paths:
+        inputs[path.relative_to(ROOT).as_posix()]=hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
     products[EVIDENCE/'交付核查结果.json']=json_text({**BASE_IDENTITY,'checked_input_sha256':inputs,
+        'repository_slug':REPOSITORY_SLUG,'required_machine_output_encoding':'utf-8',
         'review_head_source':'PR #3 当前head及提交后发布快照','validation_subject':'当前CV4设计源及产物指纹；Git审查头由PR与提交后复核快照固定，不在生成物内追写自身SHA',
         'checks':deliveries,'commands':['python docs/D1B/生成/build_design.py','python docs/D1B/生成/build_design.py --check','python docs/D1B/生成/test_build_design.py'],
         'scope':'MD/HTML及公共证据结构，非产品功能测试；HTML目视记录见审核记录'})
@@ -414,6 +545,7 @@ def generate_products():
     return products,summary
 
 def build(check_only=False):
+    configure_machine_output()
     products,summary=generate_products()
     # CRLF/LF differences count as drift: compare the exact deterministic bytes.
     if check_only:
