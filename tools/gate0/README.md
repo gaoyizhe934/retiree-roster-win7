@@ -18,7 +18,7 @@ python tools/gate0/check_contract.py --layer diff --base-ref origin/main
 
 脚本仅读取仓库内基线、样表表头、字段契约和本轮文档；输出到被忽略的 build/gate0。结果写入 results.json，含源码指纹、实际命令和退出状态，失败返回非零。没有网络请求或真实人员数据输入。
 
-检查范围：原始基线指纹、23 列映射与头文件成员、日期结构行为、C++14 消费者编译／执行、revision 确认模型、系统字段能力与强转伪造拒绝、旧接口编译拒绝、重阳节边界验收数据完整性、忽略规则、二进制属性、文档链接与 Diff 空白。
+检查范围：受控基线指纹、23 列映射与头文件成员、日期结构行为、C++14 消费者编译／执行、revision 确认模型、系统字段能力与强转伪造拒绝、旧接口编译拒绝、重阳节边界验收数据完整性、忽略规则、二进制属性、文档链接与 Diff 空白。
 
 cpp14 增加 enum_field_mapping（27 个导入／28 个编辑目标、未知值、反序 PersonFieldId 声明后的同一消费者）、field_change_value_kind（日期／文本／枚举与 clear 互斥）、filter_shape（YearCountCondition 的集合／下限与负值）。普通消费者验证 total_count() 从行集合派生，负例验证不可直接写人数。反序头文件仅生成在 build/gate0/reordered，不修改正式源码或改变 canonical 字段语义。
 
@@ -29,3 +29,5 @@ Diff 检查默认以 origin/main 为 base，可通过 --base-ref 或 ROSTER_BASE
 边界 CSV 仅是 D4 的预期验收数据，脚本检查其完整性，**未执行年龄筛选引擎**。消费示例证明 DTO 能表达调用，不证明快照失效、事务、预览、打印或 xlsx 输出已实现。g++ 是开发机补充验证，不能替代正式 VS2017 v141_xp、CMake／XMake、Win7 L2/L3 与 R 签认。
 
 维护员需要可重复运行的仓库内检查方法；本脚本不复现也不继承 D1B 原作者的 12/12、8/8 证据。D1B 的检查与静态结果在其返工阶段处理。
+
+2026-10-03，受控需求/规划修订为 v2.1，任务台账 OS 条款同步 SP1 / 6.1.7601；依据 [OD-0002](../../docs/decisions/OD-0002-Windows7-SP1目标基线.md)。只有这三份资料的 BASELINES 指纹更新，业务样表与 ContractVersion 4 不变。脚本成功不等于 Win7 或 Gate 验收通过。

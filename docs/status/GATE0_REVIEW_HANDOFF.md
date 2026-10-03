@@ -1,4 +1,16 @@
-# PR #2 Gate 0 候选复核交接
+# Gate 0 当前复核交接
+
+更新日期：2026-10-03。PR #2 已在 f47fa3e 获 R Formal APPROVED，并合并为 main `567d9cd32befc2b8aa7ae99487f8b6d2170f1436`。固定 contract_candidate_sha 仍为 e8ad944；下文 PR #2 的待复核步骤是当时的历史，不再作为当前执行指令。
+
+本次新的基线修订须单独评审。当前 C-G0-03 目标是 Windows 7 SP1 / 6.1.7601，x86/x64、00_Base 与无额外运行库环境；依据 [OD-0002](../decisions/OD-0002-Windows7-SP1目标基线.md)，替代旧 RTM 条款。C-G0-01 的 VS2017/v141_xp/Win32/C++14/MT/API level 和六个消费者不变；C-G0-02 仍待 D2 工程。
+
+Q1-B/Q2-A 已由创建者直接回答；只解决业务工作簿数量及两套 Source Profile 的首期地位。A #6 配套修改、B #3 同源重建、C #7 Guest/来源证据仍按[跨轨交接](SP1_BASELINE_HANDOFF.md)处理。当前 Gate 状态见 [GATE_STATUS](GATE_STATUS.md)。
+
+发布后，以新 PR 的真实 head、base、merge-base、输入指纹和四层 runner JSON 固定审查身份。此新范围含三份受控资料及 runner 指纹变更，不适用旧“仅两份状态文档”限制，也不继承旧 Approval。历史检查数字不冒充新提交结果。Gate 0 仍未通过。
+
+---
+
+## PR #2 证据身份修复交接原文（历史）
 
 日期：2026-10-02。阶段 PR 仍为 #2；D1B 后续材料归入唯一有效 #3，旧 #1 已关闭。依据：[R Formal Review](https://github.com/gaoyizhe934/retiree-roster-win7/pull/2#pullrequestreview-5389158602)及创建者提供的证据身份漂移解决方案。
 
@@ -9,7 +21,7 @@
 
 contract_candidate_sha 固定标识最后一个修改公共契约、contract tests 和 Gate0 runner 的技术候选，不能描述为本文自己的“当前 HEAD”。之后仅同步状态／证据的文档提交不会改变该候选基线。实际 review_head 由 GitHub PR 当前 HEAD、PR 正文、Formal Review 的 commit identity 和在该提交运行的 evidence JSON 共同固定；tracked 文档不追写自身提交 SHA。
 
-## R Formal Review 状态
+### R Formal Review 状态
 
 2026-10-02，非作者 R 已针对上述契约候选提交 [GitHub Formal Review](https://github.com/gaoyizhe934/retiree-roster-win7/pull/2#pullrequestreview-5389158602)，结论为 CHANGES_REQUESTED。
 
@@ -17,7 +29,7 @@ contract_candidate_sha 固定标识最后一个修改公共契约、contract tes
 
 本轮只同步两份状态文档与 PR 正文。同步提交发布并完成当前 HEAD 证据检查后，需要正式非作者 R 针对新的 GitHub PR HEAD 再提交 Formal Review；本文件不声明该阻塞已获 R 关闭或已 APPROVE。作者不能切换角色自签，辅助审查不能替代 Formal Review。
 
-## C 轨正式工具链请求
+### C 轨正式工具链请求
 
 本表为可领取的合作材料，尚未发送外部消息或获得 C 接收确认；状态为待 C 领取／执行，不写成已验证。
 
@@ -38,7 +50,7 @@ contract_candidate_sha 固定标识最后一个修改公共契约、contract tes
 
 MinGW GCC 6.3.0 的补充检查不能替代上述正式验收。原始资料 SHA-256、base／merge-base／新 HEAD、编译器完整版本与每条命令须随 C 输出保存。不要继承上一轮或 D1B 静态检查数字。
 
-## Review Target 身份验证
+### Review Target 身份验证
 
 发布状态／证据同步提交后，先取得真实 HEAD，再按下面的身份链固定正式复核对象：
 
@@ -56,7 +68,7 @@ MinGW GCC 6.3.0 的补充检查不能替代上述正式验收。原始资料 SHA
 
 C-G0-01／02／03 是 Gate 0 剩余条件，不是该 Formal Review 新发现的代码缺陷，也不直接阻塞本次证据身份修复。R 是否 APPROVE 以新 HEAD 的实际复核为准；PR APPROVE／合并不等于 Gate 0 PASS，不自动允许进入 D2。
 
-## A／B 与后续责任
+### A／B 与后续责任
 
 A 仍需给出第二份样表／脱敏样本、重复候选识别与人工处置、性别／类别／级别和党员代码、Profile 唯一匹配、缺状态源业务选择、工号与固定编号关系的可审查基线。
 
