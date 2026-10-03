@@ -1,20 +1,18 @@
 {
-  "base_main": "567d9cd32befc2b8aa7ae99487f8b6d2170f1436",
+  "sp1_baseline_anchor": "a0dfdd8e373ae90f765c20cf8c075a8754f674bd",
   "contract_candidate": "e8ad944e7c9c8df77c7c5fd883c4459a75270e92",
   "pr2_review_head": "f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4",
   "contract_version": 4,
   "checked_input_sha256": {
-    "docs/D1B/生成/设计正文.md": "9727667915292140275ddbf17bc444cdb0004335c819da62a0ae965b607ea10d",
-    "docs/D1B/生成/设计数据.json": "16e84c303193274dbba8a3a07a8dae1302ef0cb73d4f36d8c77978854862888f",
-    "docs/D1B/生成/build_design.py": "7516dcaca0b13a0c725373cecce1775c463ab8d08660fa527d8d293ad9089c1d",
-    "docs/D1B/生成/test_build_design.py": "07f87dc7b2127bc2bcaf1e6ff1395a4e87ec48d86c4eb43b3e3df5283b811c38",
-    "docs/D1B/README.md": "e228e0e817d19b841860a1fa374554172cb4f89f05d3a8af338b615774ddaec2",
-    "docs/D1B/D1B_交付与审核记录.md": "919038cbad945f07a3758acb8b688e8b0924f726e945e70c2446828d2e754adb",
-    "docs/D1B/D1B_评审修改报告.md": "7e9e07f9cf4a96e76c6d46d0b9a0c0b72b256d6989df8c79ab961d55265dd9ca",
+    "docs/D1B/生成/设计正文.md": "bc53d60d4449205e401aeb53f6a13c8bc31a6f08e54a5fb1ac4e6ccec4fa928f",
+    "docs/D1B/生成/设计数据.json": "79d08b1b2c7fb1df1f359a12eedd8d5bb85207ebe348fe2bf81494fc04bb63a9",
+    "docs/D1B/生成/build_design.py": "46a0c515b2ad1a400a5ecb993769b4f84352a52770d9744301b0a4f60c505237",
+    "docs/D1B/生成/test_build_design.py": "b5d7ca12ab0ba936daf49ed789053feef746928a38578787d13e930abf458a49",
+    "docs/D1B/README.md": "3f07f45cc4749f341dd7dbde56ede37029fb7237860e04fbe1b621fe9055dafe",
+    "docs/D1B/D1B_交付与审核记录.md": "3cf7f4e3e5066743851e35f6f189a51c477116a2ab733680f4011df88e3e09e4",
+    "docs/D1B/D1B_评审修改报告.md": "50367917b0daecbcdc73ba5e69b6fd6eb00443eb02363945f9535455c89867a8",
     "include/retiree_roster/schema_types.hpp": "73217a0db2469c4349c4b54bb97fd1d3ea88f01ca82285027b95d10bf3bf7161"
   },
-  "head_sha": null,
-  "merge_base_sha": "567d9cd32befc2b8aa7ae99487f8b6d2170f1436",
   "review_head_source": "PR #3 当前head及提交后发布快照",
   "validation_subject": "当前CV4设计源及产物指纹；Git审查头由PR与提交后复核快照固定，不在生成物内追写自身SHA",
   "checks": [
@@ -51,7 +49,7 @@
     {
       "check": "文档本地链接有效",
       "pass": true,
-      "detail": "生成稿链接按输出目录解析；HTML基线链接固定到main提交"
+      "detail": "生成稿链接按输出目录解析；HTML基线链接固定到SP1内容锚点"
     },
     {
       "check": "无未替换占位符",

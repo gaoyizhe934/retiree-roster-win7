@@ -7,6 +7,7 @@ import re
 import sys
 import argparse
 from html.parser import HTMLParser
+from urllib.parse import unquote
 
 # --check must be read-only even when its regression helper is imported.
 sys.dont_write_bytecode = True
@@ -15,17 +16,17 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 OUT = HERE.parent
 EVIDENCE = OUT / '证据'
-BASE_MAIN = '567d9cd32befc2b8aa7ae99487f8b6d2170f1436'
+SP1_BASELINE_ANCHOR = 'a0dfdd8e373ae90f765c20cf8c075a8754f674bd'
 CONTRACT_CANDIDATE = 'e8ad944e7c9c8df77c7c5fd883c4459a75270e92'
 PR2_REVIEW_HEAD = 'f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4'
 HEADER_SHA = '73217a0db2469c4349c4b54bb97fd1d3ea88f01ca82285027b95d10bf3bf7161'
-BASE_IDENTITY = {'base_main': BASE_MAIN, 'contract_candidate': CONTRACT_CANDIDATE,
+BASE_IDENTITY = {'sp1_baseline_anchor': SP1_BASELINE_ANCHOR, 'contract_candidate': CONTRACT_CANDIDATE,
                  'pr2_review_head': PR2_REVIEW_HEAD, 'contract_version': 4}
 PENDING_INTERFACE_CONTROLS = {'P14-04','P15-04','D20-05','P30-19'}
 BASELINES = {
-    'docs/退休人员名册打印小程序需求说明.docx': '658b10952e2cba734990d2b37f862b2495196e51427c117cf2a4edde7992c641',
-    'docs/退休人员名册打印小程序开发规划.docx': 'c1caac2094c6778363b27af2011af3cd0118fa4e96e570761479247748d347c1',
-    'reference/七阶段开发任务清单.xlsx': '7648e936d249f817bc61d43bcf109eafc94802b9a1dfd370fd23cdb45d802e26',
+    'docs/退休人员名册打印小程序需求说明.docx': '7c0240282586690886fef84e20d42f6f5c800acae952d9b23697135909a152bb',
+    'docs/退休人员名册打印小程序开发规划.docx': '241e550d9c3c4de85342f4aa064833409ce79acbe940a0e29078d23599f90d72',
+    'reference/七阶段开发任务清单.xlsx': 'dc4002bef4f7d8f4084536ede7e16f6072b63facaa12e5263694391e39c46b80',
     'reference/员工信息表11111.xlsx': '427727f5d8062e7cba699b35d9262fb594b717d3dd699f811cbb7475112cf5b6',
 }
 
@@ -171,7 +172,7 @@ def inline(value):
         if url.startswith(('../','../../')):
             target=(OUT/url).resolve().relative_to(ROOT).as_posix()
             from urllib.parse import quote
-            url='https://github.com/gaoyizhe934/retiree-roster-win7/blob/'+BASE_MAIN+'/'+quote(target)
+            url='https://github.com/gaoyizhe934/retiree-roster-win7/blob/'+SP1_BASELINE_ANCHOR+'/'+quote(target)
         return '<a href="'+url+'">'+label+'</a>'
     return re.sub(r'\[([^\]]+)\]\(([^)]+)\)',link,value).replace('&lt;br&gt;','<br>')
 
@@ -222,7 +223,7 @@ def make_html(md):
     body,toc=render_md(md)
     css='''body{margin:0;background:#f4f5f3;color:#22352f;font:17px/1.75 "Microsoft YaHei",sans-serif}aside{position:fixed;top:0;bottom:0;width:225px;background:#e6ece7;padding:20px;overflow:auto}aside strong{display:block;margin-bottom:16px}aside a{display:block;margin:12px 0;color:#25463b;text-decoration:none;font-size:15px}main{margin-left:265px}header{padding:25px 38px;background:#203d36;color:white}article{padding:26px 38px;max-width:1600px}h1{font-size:30px}h2{font-size:25px;margin-top:44px;padding-top:20px;border-top:2px solid #c4d5cb;scroll-margin-top:15px}h3{font-size:21px;margin-top:30px}p{max-width:1080px}a{color:#176650}code{font-family:Consolas,"Microsoft YaHei",monospace;background:#e9eeea;padding:1px 4px}pre{background:#f8faf8;border:1px solid #cad8cf;padding:20px;overflow:auto;line-height:1.65;font-size:15px}pre code{background:none;padding:0}.table-scroll{overflow:auto;margin:20px 0}table{border-collapse:collapse;width:100%;min-width:850px;font-size:15px}th,td{padding:11px 12px;border:1px solid #cad8cf;vertical-align:top;text-align:left}th{background:#dfeae3}tbody tr:nth-child(even){background:#edf3ed}td:first-child{white-space:nowrap}svg{width:100%;max-width:1050px;height:auto}details{margin:15px 0}@media(max-width:1000px){aside{position:static;width:auto}aside a{display:inline-block;margin:5px 12px}main{margin:0}article{padding:20px}}@media print{aside{display:none}main{margin:0}header{background:white;color:black}body{background:white}article{padding:0}.table-scroll{overflow:visible}table{min-width:0;font-size:9pt}h2,h3{break-after:avoid}tr{break-inside:avoid}details{display:none}}'''
     css += '''.table-scroll:focus-visible{outline:3px solid #176650;outline-offset:3px}.controls-table{table-layout:fixed;width:1940px;min-width:1940px}.controls-table th:nth-child(1){width:90px}.controls-table th:nth-child(2){width:130px}.controls-table th:nth-child(3){width:185px}.controls-table th:nth-child(4){width:290px}.controls-table th:nth-child(5){width:190px}.controls-table th:nth-child(6){width:265px}.controls-table th:nth-child(7){width:390px}.controls-table th:nth-child(8){width:200px}.controls-table td{overflow-wrap:anywhere}@media print{.controls-table{width:100%;min-width:0;table-layout:auto}.controls-table th:nth-child(n){width:auto}.controls-table td:first-child{white-space:normal}.controls-table td{overflow-wrap:anywhere}}'''
-    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>D1B 契约v4设计</title><style>'+css+'</style></head><body><aside><strong>D1B v0.3 复核材料</strong>'+toc+'</aside><main><header>ContractVersion 4 · Draft · Gate 0 未通过<br>作者静态设计证据；模板参数待甲方确认；非作者R未签认</header><article>'+body+'</article></main></body></html>'
+    return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>D1B 契约v4设计</title><style>'+css+'</style></head><body><aside><strong>D1B v0.3 复核材料</strong>'+toc+'</aside><main><header>ContractVersion 4 · Draft · Gate 0 未通过<br>Windows 7 SP1 / 6.1.7601 x86/x64 · 需求/规划 v2.1<br>作者静态设计证据；模板参数待甲方确认；非作者R未签认</header><article>'+body+'</article></main></body></html>'
 
 class Structure(HTMLParser):
     def __init__(self):
@@ -275,9 +276,9 @@ def static_checks(header,md,data,fields,tabs,layouts):
     check('Tab覆盖操作控件',interactive=={cid for row in tabs for cid in row['control_ids']+row.get('create_only_control_ids',[])},f'{len(interactive)}项，创建/编辑模式分开；日期组件只在活动精度启用时停靠')
     r_rows=re.findall(r'^\| RV\d{2}.*\| 待 R 复核 \|$',md,re.M)
     check('当前Draft与R未代签',len(r_rows)==9 and 'ContractVersion 4' in md and 'DatabaseSchemaVersion 独立且尚未分配' in md and 'Gate 0 未通过' in md,'九脚本待R，契约与数据库版本分开，未声明Gate通过')
-    check('当前main契约指纹',hashlib.sha256(header.encode('utf-8')).hexdigest()==HEADER_SHA,'固定main的UTF-8文本SHA-256；不声称冻结Schema')
-    for path,digest in BASELINES.items(): check('原始资料指纹：'+Path(path).name,hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest,'与PR2原始文件基线一致，路径为仓库相对位置')
-    check('CV4版本与基线身份',re.search(r'kCurrentContractVersion\s*=\s*4U',header) and data['contract_version']==4 and BASE_MAIN in md and 'ContractVersion 3' not in md and '279a204' not in md and 'PR2尚未合并' not in md,'main、contract candidate和PR2 review head分别记录')
+    check('固定SP1内容锚点契约指纹',hashlib.sha256(header.encode('utf-8')).hexdigest()==HEADER_SHA,'固定SP1内容锚点的UTF-8文本SHA-256；不声称冻结Schema')
+    for path,digest in BASELINES.items(): check('原始资料指纹：'+Path(path).name,hashlib.sha256((ROOT/path).read_bytes()).hexdigest()==digest,'与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置')
+    check('CV4版本与基线身份',re.search(r'kCurrentContractVersion\s*=\s*4U',header) and data['contract_version']==4 and SP1_BASELINE_ANCHOR in md and 'ContractVersion 3' not in md and '279a204' not in md and 'PR2尚未合并' not in md,'固定SP1内容锚点、contract candidate和PR2 review head分别记录')
     for enum,count in (('ImportFieldId',27),('EditableFieldId',28)):
         check(enum+'显式映射完整',len(enum_members(header,enum))==count+1 and explicit_mapping(header,enum),f'{count}个命名case；Unspecified/forged/default拒绝；nullptr保护')
     check('UI不依赖枚举数值identity',all(x in md for x in ('不允许整数 cast 成 PersonFieldId','不依赖 enum 数值 identity','forged／unknown／Unspecified','try_to_person_field(EditableFieldId')),'UI提交输入域枚举，服务显式映射后查询FieldSpec')
@@ -307,6 +308,20 @@ def static_checks(header,md,data,fields,tabs,layouts):
     check('未闭环报告默认禁用',len(reports)==2 and all(c[4].startswith('禁用') and 'D3接口对齐' in c[4] for c in reports),'Q11待定方式/格式/ExportLog/脱敏，B不增正式接口')
     search=next(c for c in controls if c[0]=='P20-01')
     check('搜索语义候选待确认','候选UI语义' in search[3] and '待A/R确认' in search[3] and '空 search_text' in md,'不从search_text推定字段匹配与排序')
+    q_rows='\n'.join(re.findall(r'^\| Q(?:01|02|05) \|.*$',md,re.M))
+    check('SP1目标名称','Windows 7 SP1' in md,'目标OS名称引用OD-0002')
+    check('SP1系统版本','6.1.7601' in md,'版本7601，不代替Guest实测')
+    check('当前正文无RTM目标','Win7 RTM' not in md and 'Windows 7 RTM' not in md,'历史RTM证据留main历史记录')
+    check('当前正文无7600目标','6.1.7600' not in md,'当前目标仅7601')
+    check('需求v2.1来源','需求说明 v2.1' in md,'受控需求链接与版本')
+    check('规划v2.1来源','开发规划 v2.1' in md,'受控规划链接与版本')
+    check('OD-0002来源','OD-0002-Windows7-SP1目标基线.md' in unquote(md) and 'OD-0002 只覆盖目标 OS 条款' in md,'仅覆盖OS，DTO/API/CV/主发行架构不变')
+    check('SP1交接来源','SP1_BASELINE_HANDOFF.md' in md,'跨轨来源与PR整合要求')
+    check('Q项无第二业务工作簿未决',not any(x in q_rows for x in ('第二份样表待确认','第二份业务工作簿待确认','第二份脱敏样表','两区域与第二样表','第二样表、')),'业务范围已决定；数据级脱敏测试样本仍待')
+    check('Q项无两区域性质未决',not any(x in q_rows for x in ('行1/行3性质待确认','行1／行3性质待确认','两区域性质待确认','第1行额外与重复字段、第二份样表待确认')),'Q2-A决定两套首期Source Profile')
+    check('Q1Q2当前Owner决定',all(x in q_rows for x in ('Q1-B','Q2-A','首期只有当前业务工作簿','P1','P2')),'单工作簿与两Profile范围分别确认')
+    scope=data.get('source_profile_scope',{})
+    check('SourceProfile范围与冻结区分',scope.get('owner_decisions')==['Q1-B','Q2-A'] and scope.get('business_workbooks')==1 and scope.get('profiles')==[{'id':'P1','worksheet':'Sheet1','header_row':1,'nonempty_headers':52},{'id':'P2','worksheet':'Sheet1','header_row':3,'nonempty_headers':23}] and scope.get('import_profile_status')=='未冻结' and scope.get('data_status')=='HEADER-ONLY' and scope.get('data_rows')==0 and scope.get('pending_unsupported')==5 and scope.get('pending_mapping_semantics')==8 and 'ImportProfile 未冻结' in q_rows,'两Source Profile范围已确认；冻结/逐列语义仍待A/D3/R')
     return checks
 
 def delivery_checks(md,html_doc,data,all_public):
@@ -321,14 +336,14 @@ def delivery_checks(md,html_doc,data,all_public):
     text=''.join(doc.text)
     check('34字段与Tag完整显示',all(f['id'] in text and all(cid in text for cid in f['control_ids']) for f in data['fields']) and all(f'P22-T{i:02}' in text for i in range(1,8)),'全部字段能力、日期组件、独立Tag控件')
     check('Q/RV/T完整',all(f'Q{i:02}' in text for i in range(1,14)) and all(f'RV{i:02}' in text for i in range(1,10)) and all(t['template_id'] in text for t in data['templates']),'13对接项、9复核脚本、3模板')
-    check('文档本地链接有效',all((OUT/url).exists() for url in local_links(md)),'生成稿链接按输出目录解析；HTML基线链接固定到main提交')
+    check('文档本地链接有效',all((OUT/url).exists() for url in local_links(md)),'生成稿链接按输出目录解析；HTML基线链接固定到SP1内容锚点')
     check('无未替换占位符','<!--' not in md,'控件/字段/Tab/模板/静态检查均已生成')
     check('公共材料无私有绝对路径',not re.search(r'(?i)(?:(?<![a-z])[a-z]:[\\/]|file://|\\\\[^\s]+\\)',all_public),'README、正文、HTML、交接、修改报告及JSON证据全量扫描；HTTPS不误判为盘符')
     check('公共材料无真实敏感值',not re.search(r'(?<!\d)\d{17}[0-9Xx](?!\d)|(?<!\d)1[3-9]\d{9}(?!\d)',all_public),'无完整证号或大陆手机号；没有导入人员原值')
     check('未虚报功能/Gate', '待非作者 R 复核' in md and '代码／VM／事务／GDI／xlsx版式及实物未运行' in md and 'Gate 0 未通过' in md,'仅作者静态证据，非产品兼容验收')
     check('三模板全值同步',all(str(c['width_tenth_mm']) in text and c['display_name'] in text and c['source'] in text for t in data['templates'] for c in t['columns']),'MD/HTML由同一JSON模板源渲染')
     check('长表阅读与键盘横移',html_doc.count('class="controls-table"')==len(data['pages']) and 'width:1940px' in html_doc and 'tabindex="0" role="region"' in html_doc,'控件表有明确列宽，滚动区可键盘聚焦；打印恢复100%宽度')
-    check('正式设计无内部技能术语',not any(x in md for x in ('ask-matt','beginning-work')) and '设计日期：2026-10-01' in md and '最后修订：2026-10-02' in md,'设计与修订日期分离')
+    check('正式设计无内部技能术语',not any(x in md for x in ('ask-matt','beginning-work')) and '设计日期：2026-10-01' in md and '最后修订：2026-10-03' in md,'设计与修订日期分离')
     return checks
 
 def generate_products():
@@ -360,7 +375,7 @@ def generate_products():
         if url.startswith('../'):
             from urllib.parse import quote
             target=(OUT/url).resolve().relative_to(ROOT).as_posix()
-            url='https://github.com/gaoyizhe934/retiree-roster-win7/blob/'+BASE_MAIN+'/'+quote(target)
+            url='https://github.com/gaoyizhe934/retiree-roster-win7/blob/'+SP1_BASELINE_ANCHOR+'/'+quote(target)
         return '['+label+']('+url+')'
     md=re.sub(r'\[([^\]]+)\]\(([^)]+)\)',baseline_link,md)
     yes=lambda value:'是' if value else '否'
@@ -392,7 +407,7 @@ def generate_products():
     for path in (HERE/'设计正文.md',HERE/'设计数据.json',HERE/'build_design.py',HERE/'test_build_design.py',OUT/'README.md',OUT/'D1B_交付与审核记录.md',OUT/'D1B_评审修改报告.md',ROOT/'include/retiree_roster/schema_types.hpp'):
         inputs[path.relative_to(ROOT).as_posix()]=hashlib.sha256(path.read_bytes()).hexdigest()
     products[EVIDENCE/'交付核查结果.json']=json_text({**BASE_IDENTITY,'checked_input_sha256':inputs,
-        'head_sha':None,'merge_base_sha':BASE_MAIN,'review_head_source':'PR #3 当前head及提交后发布快照','validation_subject':'当前CV4设计源及产物指纹；Git审查头由PR与提交后复核快照固定，不在生成物内追写自身SHA',
+        'review_head_source':'PR #3 当前head及提交后发布快照','validation_subject':'当前CV4设计源及产物指纹；Git审查头由PR与提交后复核快照固定，不在生成物内追写自身SHA',
         'checks':deliveries,'commands':['python docs/D1B/生成/build_design.py','python docs/D1B/生成/build_design.py --check','python docs/D1B/生成/test_build_design.py'],
         'scope':'MD/HTML及公共证据结构，非产品功能测试；HTML目视记录见审核记录'})
     summary={'pages':len(data['pages']),'controls':len(controls),'interactive':sum(c[2] not in ('STATIC','msctls_progress32') for c in controls),'tab_stops':sum(len(t['control_ids']) for t in tabs),'fields':len(fields),'import_fields':len(data['import_fields']),'editable_fields':len(data['editable_fields']),'templates':len(data['templates']),'static_checks':len(checks),'delivery_checks':len(deliveries),'negative_checks':len(negative),'failed':[r for r in checks+deliveries+negative if not r['pass']]}

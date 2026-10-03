@@ -1,72 +1,51 @@
-# D1B v0.3 交付与人工审核记录
+# D1B v0.3 交付与审核记录
 
-设计日期：2026-10-01；最后修订：2026-10-02。阶段 D1B；ContractVersion 4 Draft；DatabaseSchemaVersion 独立且尚未分配；Gate 0 未通过，非作者 R 对本轮材料未签认。
+设计日期2026-10-01；最后修订2026-10-03。ContractVersion 4 Draft；DatabaseSchemaVersion 独立且尚未分配；Gate 0 未通过，待非作者 R 复核。
 
-## 当前基线、Git 身份与发布边界
+## 固定内容身份与动态发布身份
 
-| 身份 | 已核验状态 |
-| --- | --- |
-| base/main | 567d9cd32befc2b8aa7ae99487f8b6d2170f1436 |
-| contract candidate | e8ad944e7c9c8df77c7c5fd883c4459a75270e92 |
-| PR2 final review head | f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4；PR2 已 APPROVED + merged，不等于 Gate 0 PASS |
-| D1B 唯一 PR | [#3](https://github.com/gaoyizhe934/retiree-roster-win7/pull/3)；Open/Draft，base=main；远程分支 docs/d1b-contract-v3-design 是历史名称，设计内容以 CV4 为准 |
-| CV4 历史与审查头 | 本地 docs/d1b-contract-v4-design 从上述 main 起步，D1B 提交仅修改 docs/D1B/**；实际提交 SHA、merge-base、behind、提交列表及远程头由 PR 正文和发布快照固定，不在提交内嵌自身 SHA |
-| 旧发布身份 | e15c3dd7a7fe1d52c86c6b8aff09c8db2c4e2818 保留于原本地 PR3 工作树；旧 #1 及双父 D1B merge commit 不纳入本轮 CV4 历史 |
+SP1_BASELINE_ANCHOR `a0dfdd8e373ae90f765c20cf8c075a8754f674bd`；PR #8 已 APPROVED 并合并，OD-0002 Accepted。目标 Windows 7 SP1 / 6.1.7601 x86/x64；需求/规划 v2.1、SP1 任务台账与其三份新指纹由生成器核验。业务工作簿指纹不变；schema_types.hpp 与原 CV4 完全相同，HEADER_SHA 保留。
 
-已执行 fetch 和现有分支的 pull --ff-only；原主工作区的未跟踪 CONTEXT/ADR/目录说明保留。当前 main 已获取到本地，本轮 CV4 从该基线创建，提交后检查 merge-base、behind 与旧 #1 ancestry；没有在旧 CV3 ancestry 上追加普通修复，也没有本地分支合并。
+contract candidate `e8ad944e7c9c8df77c7c5fd883c4459a75270e92`、PR2 final review head `f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4` 分别保留。固定内容锚点不表示 current main、阶段 head 或 merge-base；动态 Git 身份、Draft/Ready、推送和 Review 以 PR #3 正文、发布快照和 Formal Review 为准。
 
-2026-10-02 发布前重新查询 GitHub：现有规则仅覆盖 main，#3 分支 protected=false，适用规则为空。本轮没有修改保护规则。按用户对 commit、push、PR 正文及评论的明确授权，将 clean CV4 提交发布到 #3 的同一远程分支；替换旧 ancestry 时使用精确旧头校验，保留原本地提交可恢复。实际执行结果与提交后检查记录在发布快照和 PR 评论中；不关闭重建 PR、不新建额外 D1B PR，不执行合并。分支名中的 v3 仅为历史名称。
+## 2026-10-03 清单处理
 
-## 清单逐项对照
-
-| 清单项 | 实际处理与证据 | 验收边界 |
+| 项目 | 单一源变更与证据 | 验收边界 |
 | --- | --- | --- |
-| P0-01/P0-02 | 从当前 main 起草 clean 本地候选；本地无旧 #1 ancestry，behind=0 | 实际远程头及历史检查见发布快照/PR；非作者评审未完成 |
-| P0-03 | 本地 ASCII v4 候选；正文说明远程 v3 为历史名称 | 未擅自改名远程分支 |
-| 全量 CV4/main | 正文、README、交接、报告和同源产物更新；三种 SHA 身份分开 | CV4仍Draft，Gate0未通过 |
-| Import/Edit mapping | 27/28个显式case与Unspecified/default/nullptr核查；P12/P22/RV同步 | C++运行与D3业务服务未代验 |
-| FieldChange | §3.3状态表，清空/Date/Text/Enum payload、禁止Identifier/Timestamp；姓名禁清空 | shape不代替D3必填/状态值域 |
-| 预检信任边界 | caller proposal重验、可信mapping_version、immutable checked copy；P12/P13/D10/RV02/Q03 | Confirm可源字节hash核对；缺失/变化拒绝，不替换checked copy |
-| total_count() | 无可写人数；P30/P40/P50/RV07/Q07同步 | 人数唯一来源rows.size() |
-| YearCount | age/party均shape，空启用/负值反例；disabled不筛选 | 完整FilterSpec仍待D4 |
-| UI白名单 | 数据源filterable_fields、类型Comparison候选；系统/敏感/编号/工号排除 | 待A/R批准；Date范围未开放 |
-| Unknown日期 | 18个Person年月日组件+3个D20组件空白/disabled | DTO内部0；精度启用和Tab规则同步 |
-| 状态日期单入口 | 既有LifeStatus/DeathDate P22只读；D20默认禁用至Q04批准 | 新建业务校验；清空/回在世/备份/历史待A/R |
-| 报告/搜索 | P14/P15导出禁用；Q11列方式、格式、ExportLog、脱敏；P20标候选语义 | B未新增正式公共接口 |
-| 可复现性 | 新静态/交付检查；仓库反例脚本及JSON；--check漂移不写入测试 | 不继承旧30/12/9统计 |
-| 页面目视 | 见下方当前轮记录 | 结构parser不代替目视；Win32/Win7实测仍未运行 |
-| 文档清理 | 删除内部技能术语；设计日期与最后修订分开 | 工作流程细节只保留在交接与发布边界 |
+| 平台与整合 | #3 的平台状态已按本轮请求恢复 Draft；main→阶段基线 integration 材料另存本轮交付快照 | 实际状态以 GitHub 为准；整合/发布/Review 按对应授权与平台结果，不在此固化动态状态 |
+| SP1目标 | 正文、DPI、RV09、Q10 使用 Windows 7 SP1 / 6.1.7601 x86/x64 | C 的 Guest、字体/DPI/打印机证据仍独立验收 |
+| v2.1来源 | 需求/规划、SP1台账、OD-0002与handoff链接固定到内容锚点 | OD仅覆盖OS，不改DTO/API/CV/主发行架构 |
+| 受控指纹 | 三份 v2.1 新SHA、业务工作簿原SHA与schemaSHA实际核验 | 不修改当前分支或目录外的 Word/Excel 原件 |
+| Q1/Q2决定 | 单业务工作簿；P1行1/52标题与P2行3/23标题均首期Source Profile | 不代表ImportProfile冻结、详细映射/值域批准或已完成D3 |
+| Q01/Q02/Q05 | 删除业务范围未决；保留日期/枚举/状态、数据级脱敏测试样本、5 Unsupported与8语义项 | HEADER-ONLY、0数据行；不复制未合并#6详细草案 |
+| P11/P12只读提示 | 使用既有P11-03/P12-09显示首期范围与未冻结状态 | 不增加可写frozen标志，不改变预检信任边界或操作控件 |
+| 防回退 | SP1/7601/v2.1/OD/handoff/Q项/SourceProfile冻结区分新增静态检查 | 当前数量以证据JSON实际重算，旧统计仅历史 |
+| 反例 | SP1→RTM、7601→7600、v2.1SHA→旧SHA、旧Q项重插、范围冒充冻结 | 故意损坏输入必须失败；旧CV4反例保留 |
+| HTML | 源重建，CSS/结构不重构，增量目视记录随本轮交付快照 | 只验设计文档，不冒充Win7程序UI实测 |
 
-## 逐文件修改原因
+## 逐文件原因
 
-| 文件 | 修改原因 |
+| 文件 | 原因 |
 | --- | --- |
-| .gitattributes | 固定 HTML 为 LF；已复现 autocrlf=true 全新检出导致漂移，修复后的独立检出检查记录在发布快照 |
-| 生成/设计正文.md | CV4/main、显式映射、FieldChange、信任边界、派生人数、YearCount、白名单、Q/RV |
-| 生成/设计数据.json | 候选白名单/类型比较、姓名及状态日期UI override、报告/搜索/日期默认 |
-| 生成/build_design.py | 分离三基线身份、当前header SHA、CV4检查、UI override、只读--check |
-| 生成/test_build_design.py | 故意损坏输入反例；独立临时副本验证正常重建和漂移检测不写入 |
-| D1B_使用流程与模板设计.md/.html | 从当前源完整重建；HTML标题与CV4状态同步 |
-| 证据/控件与模板数据.json | 当前字段/控件/Tab/模板及UI限制同源重算 |
-| 证据/静态核查结果.json | CV4新检查、原始资料/契约指纹、模板算术 |
-| 证据/交付核查结果.json | 结构/隐私、当前输入指纹与外部审查头定位 |
-| 证据/生成器反例核查结果.json | 当前生成器反例结果随仓库可复现 |
-| README/本记录/评审修改报告 | main与PR2最新状态、真实基线、发布方式和复核入口 |
+| 生成/设计正文.md | SP1/v2.1/OD/handoff来源、Q01/Q02/Q05/Q10/RV09、固定内容与动态身份分开 |
+| 生成/设计数据.json | 两Source Profile范围、HEADER-ONLY与未冻结元数据；既有控件只读提示 |
+| 生成/build_design.py | SP1内容锚点、三新SHA、防回退检查、交付身份移除动态Git值 |
+| 生成/test_build_design.py | 新环境/指纹/Owner决定/冻结区分反例，保留原CV4与漂移零写入回归 |
+| README/本记录/评审修改报告 | 长期来源与职责说明、SP1同步章节，删除容易过时的动态Git快照 |
+| 设计MD/HTML及四JSON证据 | 六份产物由源重建，按实际输入重算 |
 
-所有候选差异仅 docs/D1B/**，不修改程序契约、原始 Word/Excel、Gate状态或其他轨道文件。测试结果、命令退出码、逐文件指纹和实际本地Git状态另存本轮交接快照，可读材料同步到CV4独立目录，不覆盖旧交付。
+`.gitattributes`、CSS、34字段、Tag、27/28显式映射、FieldChange、可信预检、派生人数、筛选/日期/状态/报告等 CV4 主体不改。业务样表、公共契约、Gate及A/C文件未修改。
 
-## 当前轮验证
+## 验证身份与范围
 
-本轮实际重算：51/51静态、14/14交付、18/18生成器输入核查（1个完整输入基准+17个故意损坏反例），两项回归测试通过；历史统计不作为本轮结论。`build_design.py --check` 从输入在内存重建并比较六份生成产物，零写入；异常临时副本测试验证漂移返回1且输入/产物字节保持。
+生成器核验四份受控/样表指纹及契约指纹；静态/交付/输入核查数量与结果见当前 JSON，不继承上一轮数量。`--check`逐字节比较六份产物且零写入；两项回归验证故意回退拒绝、临时副本漂移非零退出且不写入。
 
-HTML目视日期2026-10-02；Codex In-app Browser，HTTP请求User-Agent报告 Chrome/154.0.0.0；视口1024×768与800×768。实际检查9章目录跳转、标题层级、SVG、P22/P30/P41长表、横向滚动/键盘聚焦、中文显示和本地交接链接（HTTP200，字节相同）。发现名称列过窄、中文逐字换行，已在生成器设置控件表1940px和明确列宽，重建后复查正常；滚动区可Tab聚焦并ArrowRight横移。1024固定目录、800流式目录，主体无整体横向溢出。
+阶段分支纳入SP1前，可在独立非Git验证副本中，以固定锚点的受控资料验证候选源及产物；这种候选检查不表示阶段Git整合完成，也不代替纳入/发布后的实际head复验。本轮外部快照明确记载验证目录、输入指纹、命令/退出码、实际Git状态和增量目视范围。
 
-字体CSS包含Microsoft YaHei与sans-serif fallback，当前Windows显示正常；无微软雅黑环境与Win7字体实测仍待C。已查看浏览器解析的print CSS（目录隐藏、表宽100%、行断页），未执行实际打印预览分页或实物。页面检查记录和14张检查截图随本地交接包保存，截图含发现问题与修复后的对照；最终 HTML 的 SHA-256 与实际检查记录由发布快照固定。这项目视不代替Win32/Win7/GDI/xlsx验收。
+2026-10-02 的1024/800目录/SVG/长表/键盘/链接与print CSS完整检查保留为历史；2026-10-03本轮仅增量核验SP1/7601、Q01/Q02/Q05/Q10、OD/handoff链接与长表溢出。未做实际打印预览分页/实物打印、缺字体环境、Win32、导入事务或Windows 7 SP1 VM验收。
 
-作者检查仅静态设计和HTML文档，不运行实际 Win32、导入事务/幂等、规则引擎、快照锁、GDI/xlsx版式、实物打印或 Win7 VM；无 L1/L2/L3 兼容验收。RV01–RV09 均待非作者 R；没有导入人员原值，不虚报实测人数。
+## 协作与交还
 
-## 待协作与下次起点
+A/D3/R：Profile冻结和唯一匹配、详细逐列处置、5 Unsupported、8语义项、枚举/状态/重复候选及批准证据；A/R：候选筛选、搜索、状态更正、报告接口；甲方：数据级脱敏测试样本与模板意向。C：VS2017/v141_xp、Windows 7 SP1 / 6.1.7601 x86/x64、字体/DPI/设备/GDI/xlsx证据。R：在最终push后对实际head走RV01–RV09并提交Formal Review。
 
-A/R：批准候选筛选白名单、搜索语义、状态/死亡日期更正规则、报告接口、Profile唯一匹配、重复候选、枚举/党员代码、PersonCode与工号关系；甲方补样表/模板意向。C：VS2017/v141_xp、Win7 RTM、字体/DPI/设备/硬边距/GDI/xlsx证据。R：发布后固定新#3 HEAD，复核main/base/merge-base、CV4、mapping/FieldChange/D3/YearCount/人数，走RV并提交Formal Review。
-
-提交主题：`docs: 对齐D1B与ContractVersion4并重建复核证据`。用户已明确授权 commit、push、更新 PR 正文与评论；实际提交/发布结果及提交后检查由 PR 和发布快照记录。本轮不新增 PR，不执行合并；PR 保持 Draft，Gate 0 未通过，待非作者 R 对实际审查头进行 Formal Review。
+建议提交：`docs: 同步D1B的SP1基线与首期Source Profile决定`。阶段成果仅#3；整合经GitHub PR，不本地merge/rebase、不强推。提交、发布、integration创建及其合并各依明确授权；成果切Ready并请求R须在最后push与behind=0核验后。任何Approval不等于Gate 0 PASS。

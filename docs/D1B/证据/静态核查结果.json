@@ -1,5 +1,5 @@
 {
-  "base_main": "567d9cd32befc2b8aa7ae99487f8b6d2170f1436",
+  "sp1_baseline_anchor": "a0dfdd8e373ae90f765c20cf8c075a8754f674bd",
   "contract_candidate": "e8ad944e7c9c8df77c7c5fd883c4459a75270e92",
   "pr2_review_head": "f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4",
   "contract_version": 4,
@@ -132,34 +132,34 @@
       "detail": "九脚本待R，契约与数据库版本分开，未声明Gate通过"
     },
     {
-      "check": "当前main契约指纹",
+      "check": "固定SP1内容锚点契约指纹",
       "pass": true,
-      "detail": "固定main的UTF-8文本SHA-256；不声称冻结Schema"
+      "detail": "固定SP1内容锚点的UTF-8文本SHA-256；不声称冻结Schema"
     },
     {
       "check": "原始资料指纹：退休人员名册打印小程序需求说明.docx",
       "pass": true,
-      "detail": "与PR2原始文件基线一致，路径为仓库相对位置"
+      "detail": "与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置"
     },
     {
       "check": "原始资料指纹：退休人员名册打印小程序开发规划.docx",
       "pass": true,
-      "detail": "与PR2原始文件基线一致，路径为仓库相对位置"
+      "detail": "与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置"
     },
     {
       "check": "原始资料指纹：七阶段开发任务清单.xlsx",
       "pass": true,
-      "detail": "与PR2原始文件基线一致，路径为仓库相对位置"
+      "detail": "与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置"
     },
     {
       "check": "原始资料指纹：员工信息表11111.xlsx",
       "pass": true,
-      "detail": "与PR2原始文件基线一致，路径为仓库相对位置"
+      "detail": "与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置"
     },
     {
       "check": "CV4版本与基线身份",
       "pass": true,
-      "detail": "main、contract candidate和PR2 review head分别记录"
+      "detail": "固定SP1内容锚点、contract candidate和PR2 review head分别记录"
     },
     {
       "check": "ImportFieldId显式映射完整",
@@ -260,6 +260,66 @@
       "check": "搜索语义候选待确认",
       "pass": true,
       "detail": "不从search_text推定字段匹配与排序"
+    },
+    {
+      "check": "SP1目标名称",
+      "pass": true,
+      "detail": "目标OS名称引用OD-0002"
+    },
+    {
+      "check": "SP1系统版本",
+      "pass": true,
+      "detail": "版本7601，不代替Guest实测"
+    },
+    {
+      "check": "当前正文无RTM目标",
+      "pass": true,
+      "detail": "历史RTM证据留main历史记录"
+    },
+    {
+      "check": "当前正文无7600目标",
+      "pass": true,
+      "detail": "当前目标仅7601"
+    },
+    {
+      "check": "需求v2.1来源",
+      "pass": true,
+      "detail": "受控需求链接与版本"
+    },
+    {
+      "check": "规划v2.1来源",
+      "pass": true,
+      "detail": "受控规划链接与版本"
+    },
+    {
+      "check": "OD-0002来源",
+      "pass": true,
+      "detail": "仅覆盖OS，DTO/API/CV/主发行架构不变"
+    },
+    {
+      "check": "SP1交接来源",
+      "pass": true,
+      "detail": "跨轨来源与PR整合要求"
+    },
+    {
+      "check": "Q项无第二业务工作簿未决",
+      "pass": true,
+      "detail": "业务范围已决定；数据级脱敏测试样本仍待"
+    },
+    {
+      "check": "Q项无两区域性质未决",
+      "pass": true,
+      "detail": "Q2-A决定两套首期Source Profile"
+    },
+    {
+      "check": "Q1Q2当前Owner决定",
+      "pass": true,
+      "detail": "单工作簿与两Profile范围分别确认"
+    },
+    {
+      "check": "SourceProfile范围与冻结区分",
+      "pass": true,
+      "detail": "两Source Profile范围已确认；冻结/逐列语义仍待A/D3/R"
     }
   ],
   "layout": [

@@ -277,8 +277,8 @@
           "P11-03",
           "表头预览",
           "SysListView32 LVS_REPORT",
-          "查看列号和原始标题",
-          "只读",
+          "查看列号和原始标题；只读范围提示P1=Sheet1行1/52标题、P2=行3/23标题",
+          "只读；首期Source Profile已确认，ImportProfile未冻结",
           "已选表头行",
           "只展示服务读取的标题",
           "无法读取表头，请检查工作表"
@@ -403,9 +403,9 @@
           "Profile与映射信息",
           "STATIC",
           "caller proposal：profile_id/profile_version/mapping_version/status_resolution；可信摘要仅读service结果",
-          "无已冻结Profile；人工映射",
+          "P1/P2首期范围已确认；ImportProfile未冻结；人工映射",
           "只读",
-          "冻结证据来自配置仓储，不接收UI可写frozen标志",
+          "冻结证据来自配置仓储，不接收UI可写frozen标志；Source Profile范围确认不构成ImportProfile冻结",
           "请检查输入；失败留页并保留草稿"
         ],
         [
@@ -2217,5 +2217,32 @@
     "design_date": "2026-10-01",
     "last_revised": "2026-10-02",
     "version": "D1B-L0 v0.3"
+  },
+  "source_profile_scope": {
+    "owner_decisions": [
+      "Q1-B",
+      "Q2-A"
+    ],
+    "business_workbooks": 1,
+    "profiles": [
+      {
+        "id": "P1",
+        "worksheet": "Sheet1",
+        "header_row": 1,
+        "nonempty_headers": 52
+      },
+      {
+        "id": "P2",
+        "worksheet": "Sheet1",
+        "header_row": 3,
+        "nonempty_headers": 23
+      }
+    ],
+    "scope_status": "首期范围已确认",
+    "import_profile_status": "未冻结",
+    "data_status": "HEADER-ONLY",
+    "data_rows": 0,
+    "pending_unsupported": 5,
+    "pending_mapping_semantics": 8
   }
 }

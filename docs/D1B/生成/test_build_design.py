@@ -38,11 +38,28 @@ def negative_results(builder):
         ('YearCount负值拒绝',lambda h,m,d:(h.replace('condition.minimum < 0','false'),m,d)),
         ('Confirm源身份与checked copy',lambda h,m,d:(h,m.replace('可重读源字节验证 SHA/identity','确认不重读原文件'),d)),
     ]
+    scenarios.extend([
+        ('SP1目标名称',lambda h,m,d:(h,m.replace('Windows 7 SP1','Win7 RTM'),d)),
+        ('SP1系统版本',lambda h,m,d:(h,m.replace('6.1.7601','6.1.7600'),d)),
+        ('Q项无第二业务工作簿未决',lambda h,m,d:(h,m+'\n| Q02 | 第二份样表待确认 | A | 待确认 |\n',d)),
+        ('Q项无两区域性质未决',lambda h,m,d:(h,m+'\n| Q05 | 行1/行3性质待确认 | A | 待确认 |\n',d)),
+    ])
     for name,mutate in scenarios:
         h,m,d=mutate(header,md,copy.deepcopy(data))
         result=evaluate(h,m,d)
         results.append(builder.check_row('反例：'+name,baseline.get(name) is True and result.get(name) is False,'故意回退输入；对应检查应失败'))
+    # Change the expected fingerprint, without touching controlled documents.
+    rel='docs/退休人员名册打印小程序需求说明.docx'
+    name='原始资料指纹：退休人员名册打印小程序需求说明.docx'
+    current_sha=builder.BASELINES[rel]
+    try:
+        builder.BASELINES[rel]='658b10952e2cba734990d2b37f862b2495196e51427c117cf2a4edde7992c641'
+        result=evaluate(header,md,data)
+        results.append(builder.check_row('反例：v2.1指纹回退v2.0',baseline.get(name) is True and result.get(name) is False,'旧SHA必须被当前受控文件检查拒绝'))
+    finally:
+        builder.BASELINES[rel]=current_sha
     mutations=[
+        ('SourceProfile范围与冻结区分',lambda d:d['source_profile_scope'].update(import_profile_status='已冻结')),
         ('FullName禁止UI清空',lambda d:next(f for f in d['fields'] if f['id']=='FullName')['ui_override'].update(ordinary_clear_allowed=True)),
         ('既有状态日期单入口',lambda d:next(f for f in d['fields'] if f['id']=='DeathDate')['ui_override'].update(existing_readonly=False)),
         ('筛选白名单排除系统敏感',lambda d:d['filterable_fields'].append('NationalId')),

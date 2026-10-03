@@ -57,6 +57,36 @@
       "detail": "故意回退输入；对应检查应失败"
     },
     {
+      "check": "反例：SP1目标名称",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：SP1系统版本",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：Q项无第二业务工作簿未决",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：Q项无两区域性质未决",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：v2.1指纹回退v2.0",
+      "pass": true,
+      "detail": "旧SHA必须被当前受控文件检查拒绝"
+    },
+    {
+      "check": "反例：SourceProfile范围与冻结区分",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
       "check": "反例：FullName禁止UI清空",
       "pass": true,
       "detail": "故意错误UI数据；对应检查应失败"

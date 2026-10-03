@@ -1,8 +1,8 @@
 # D1B 使用流程与打印模板设计
 
-版本：D1B-L0 v0.3｜设计日期：2026-10-01｜最后修订：2026-10-02｜工作类型：docs｜当前状态：Draft，Gate 0 未通过，待非作者 R 复核。
+版本：D1B-L0 v0.3｜设计日期：2026-10-01｜最后修订：2026-10-03｜工作类型：docs｜当前状态：Draft，Gate 0 未通过，待非作者 R 复核。
 
-本轮按 PR #3 复核清单迁移至 main 的 ContractVersion 4 草案。PR #2 已获非作者 R 对其最终审查头的 APPROVED 并合并，但这不表示 Gate 0 PASS。契约修订号不表示业务批准、接口冻结或数据库迁移版本。DatabaseSchemaVersion 独立且尚未分配；本文没有实现业务服务或签认 Gate。
+本轮按已合并 PR #8 的固定 SP1 内容锚点同步设计：目标为 Windows 7 SP1 / 6.1.7601 x86/x64，受控需求与规划 v2.1，ContractVersion 4 草案。PR #2 已获非作者 R 对其最终审查头的 APPROVED 并合并，但这不表示 Gate 0 PASS。契约修订号不表示业务批准、接口冻结或数据库迁移版本。DatabaseSchemaVersion 独立且尚未分配；本文没有实现业务服务或签认 Gate。
 
 ## 1. 任务、基线与权威来源
 
@@ -10,16 +10,23 @@
 
 | 基线 | 当前定位 |
 | --- | --- |
-| main `567d9cd32befc2b8aa7ae99487f8b6d2170f1436` | 当前合并基线；本地 CV4 候选直接基于此提交，不承接旧 #1 ancestry |
+| SP1 fixed baseline anchor `a0dfdd8e373ae90f765c20cf8c075a8754f674bd` | PR #8 已合并的固定内容锚点，用于受控资料指纹和来源链接；不表示动态 current main、PR head 或 merge-base |
 | contract candidate `e8ad944e7c9c8df77c7c5fd883c4459a75270e92` | CV4 契约候选身份，与 main 身份分别记录 |
 | PR2 final review head `f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4` | 获非作者 R APPROVED 后由 PR #2 合入 main；不表示 Gate 0 PASS |
-| [基线与权威来源](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/docs/baseline/00_%E5%9F%BA%E7%BA%BF%E4%B8%8E%E6%9D%83%E5%A8%81%E6%9D%A5%E6%BA%90.md) | 已批准 Owner Decision／ADR > 需求 v2.0 > 规划 v2.0 > 任务台账 > Gate 冻结公共契约 > README／CONTRIBUTING；未合并 PR 为草案。未批准 ADR 无覆盖效力 |
-| [schema_types.hpp](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/include/retiree_roster/schema_types.hpp) | ContractVersion 4 Draft；FieldSpec、输入 DTO、导入、FilterSpec、快照及打印模板的具体表达 |
-| [Gate Status](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/docs/status/GATE_STATUS.md) | Gate 0 未通过；A/B/C/R 和甲方证据仍待齐备。本轮不改正式状态表 |
-| [导入 Profile](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/docs/baseline/01_%E5%AF%BC%E5%85%A5Profile%E5%86%BB%E7%BB%93%E8%AF%B4%E6%98%8E.md) | 当前没有已冻结 Profile；配置仓储与审批证据负责判定冻结状态 |
-| [源字段保留](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/docs/baseline/02_%E5%AD%97%E6%AE%B5%E6%98%A0%E5%B0%84%E4%B8%8E%E6%95%B0%E6%8D%AE%E4%BF%9D%E7%95%99%E7%AD%96%E7%95%A5.md) | Sheet1 第 3 行 23 个非空标题候选映射；第 1 行额外与重复字段、第二份样表待确认 |
-| [日期 ADR](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/docs/decisions/ADR-0002-%E6%97%A5%E6%9C%9F%E7%B2%BE%E5%BA%A6%E6%A8%A1%E5%9E%8B.md)、[快照 ADR](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/docs/decisions/ADR-0003-%E5%90%8D%E5%8D%95%E5%BF%AB%E7%85%A7%E4%B8%8E%E8%BE%93%E5%87%BA%E4%B8%80%E8%87%B4%E6%80%A7.md)、[标签 ADR](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/docs/decisions/ADR-0004-%E6%A0%87%E7%AD%BE%E4%B8%8E%E5%85%B3%E6%80%80%E7%8A%B6%E6%80%81%E6%A8%A1%E5%9E%8B.md) | Proposed；用于本轮草案对齐，不冒充已批准规则 |
-| [GitHub 协作命名规范](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/GitHub%E5%8D%8F%E4%BD%9C%E5%91%BD%E5%90%8D%E8%A7%84%E8%8C%83.md)、[OD-0001](https://github.com/gaoyizhe934/retiree-roster-win7/blob/567d9cd32befc2b8aa7ae99487f8b6d2170f1436/docs/decisions/OD-0001-%E5%88%86%E6%94%AF%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99.md) | 新分支只用 ASCII；D1B 返工继续使用唯一有效 PR #3 |
+| [基线与权威来源](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/baseline/00_%E5%9F%BA%E7%BA%BF%E4%B8%8E%E6%9D%83%E5%A8%81%E6%9D%A5%E6%BA%90.md) | 已批准 Owner Decision／ADR > 需求 v2.1 > 规划 v2.1 > 任务台账 > Gate 冻结公共契约 > README／CONTRIBUTING；未合并 PR 为草案。未批准 ADR 无覆盖效力 |
+| [需求说明 v2.1](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/%E9%80%80%E4%BC%91%E4%BA%BA%E5%91%98%E5%90%8D%E5%86%8C%E6%89%93%E5%8D%B0%E5%B0%8F%E7%A8%8B%E5%BA%8F%E9%9C%80%E6%B1%82%E8%AF%B4%E6%98%8E.docx) | OD-0002 修订后的目标 OS 条款，业务范围沿用既有要求 |
+| [开发规划 v2.1](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/%E9%80%80%E4%BC%91%E4%BA%BA%E5%91%98%E5%90%8D%E5%86%8C%E6%89%93%E5%8D%B0%E5%B0%8F%E7%A8%8B%E5%BA%8F%E5%BC%80%E5%8F%91%E8%A7%84%E5%88%92.docx) | 同步 Windows 7 SP1；轨道、Gate 和构建职责不变 |
+| [SP1 修订后的七阶段任务台账](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/reference/%E4%B8%83%E9%98%B6%E6%AE%B5%E5%BC%80%E5%8F%91%E4%BB%BB%E5%8A%A1%E6%B8%85%E5%8D%95.xlsx) | 目标 OS 单元格修订；进度与 R 结论未因此通过 |
+| [OD-0002 Windows 7 SP1 目标基线](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/decisions/OD-0002-Windows7-SP1%E7%9B%AE%E6%A0%87%E5%9F%BA%E7%BA%BF.md) | Accepted，仅覆盖目标 OS 条款：Windows 7 SP1 / 6.1.7601 |
+| [SP1_BASELINE_HANDOFF](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/status/SP1_BASELINE_HANDOFF.md) | Q1-B/Q2-A 人类决定、跨轨基线整合与验收责任 |
+| [schema_types.hpp](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/include/retiree_roster/schema_types.hpp) | ContractVersion 4 Draft；FieldSpec、输入 DTO、导入、FilterSpec、快照及打印模板的具体表达 |
+| [Gate Status](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/status/GATE_STATUS.md) | Gate 0 未通过；A/B/C/R 和甲方证据仍待齐备。本轮不改正式状态表 |
+| [导入 Profile](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/baseline/01_%E5%AF%BC%E5%85%A5Profile%E5%86%BB%E7%BB%93%E8%AF%B4%E6%98%8E.md) | 当前没有已冻结 Profile；配置仓储与审批证据负责判定冻结状态 |
+| [源字段保留](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/baseline/02_%E5%AD%97%E6%AE%B5%E6%98%A0%E5%B0%84%E4%B8%8E%E6%95%B0%E6%8D%AE%E4%BF%9D%E7%95%99%E7%AD%96%E7%95%A5.md) | Q1-B/Q2-A 已确认首期只有当前业务工作簿，P1（Sheet1 行1／52标题）与 P2（行3／23标题）均为首期 Source Profile；逐列处置与批准仍待 A/D3/R |
+| [日期 ADR](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/decisions/ADR-0002-%E6%97%A5%E6%9C%9F%E7%B2%BE%E5%BA%A6%E6%A8%A1%E5%9E%8B.md)、[快照 ADR](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/decisions/ADR-0003-%E5%90%8D%E5%8D%95%E5%BF%AB%E7%85%A7%E4%B8%8E%E8%BE%93%E5%87%BA%E4%B8%80%E8%87%B4%E6%80%A7.md)、[标签 ADR](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/decisions/ADR-0004-%E6%A0%87%E7%AD%BE%E4%B8%8E%E5%85%B3%E6%80%80%E7%8A%B6%E6%80%81%E6%A8%A1%E5%9E%8B.md) | Proposed；用于本轮草案对齐，不冒充已批准规则 |
+| [GitHub 协作命名规范](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/GitHub%E5%8D%8F%E4%BD%9C%E5%91%BD%E5%90%8D%E8%A7%84%E8%8C%83.md)、[OD-0001](https://github.com/gaoyizhe934/retiree-roster-win7/blob/a0dfdd8e373ae90f765c20cf8c075a8754f674bd/docs/decisions/OD-0001-%E5%88%86%E6%94%AF%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99.md) | 新分支只用 ASCII；D1B 返工继续使用唯一有效 PR #3 |
+
+OD-0002 只覆盖目标 OS 条款，不改变业务 DTO/API、ContractVersion、Win32/x86 主发行架构。固定内容锚点与动态审查身份分开：current main、PR #3 head、merge-base、ahead/behind、平台 Draft/Ready 以 PR 正文、发布快照与对应 Formal Review 为准。本文 Draft 是设计成熟度，不代替 GitHub 平台状态。
 
 术语：PersonId 是内部永久 ID；PersonCode 是业务可见固定编号，服务生成且只读；EmployeeNo 是源工号，可空、可重复，不是上述两种标识。print_serial_number 属于一次名单，从 1 连续生成。筛选决定入选，模板决定展示，snapshot_id 决定三条输出消费的同一名单。旧 CONTEXT 或历史提取稿的冲突描述按上述权威顺序定位，不反向覆盖当前草案。
 
@@ -113,10 +120,11 @@ P01 人数／最近导入；维护员显示名或本机标识
 ```text
 P10 [文件名／本地选取位置] [选择文件] [下一步] [取消]
 P11 [工作表] [表头行] [列位置与原表头预览] [上一步] [下一步] [取消]
+    只读范围：P1=Sheet1 行1／52标题；P2=Sheet1 行3／23标题；首期 Source Profile 已确认
 P12 [列索引 | 原标题 | 处置 | ImportFieldId | 状态源确认 | 问题]
     [处置方式] [可导入目标] [确认状态源列] [应用] [重置为Unsupported]
     [缺失状态默认值：未选择] [明确确认默认值]
-    Profile ID/版本、映射版本、状态来源（只读）
+    Profile ID/版本、映射版本、状态来源（只读）；ImportProfile 未冻结
     [上一步] [开始预检] [取消]
 P13 总记录／有效／异常／重复候选／未解决重复；Profile／映射／状态摘要
     技术信息：batch_id、preview_revision、source_sha256
@@ -128,13 +136,15 @@ P15 [进度] 事务状态、批次与revision反馈
     [进入人员列表] [返回并重新预检] [导出脱敏批次报告]
 ```
 
+Q1-B 已确认首期只有当前业务工作簿；Q2-A 已确认 P1（Sheet1 行1／52标题）与 P2（Sheet1 行3／23标题）均为首期 Source Profile。Source Profile 已纳入首期范围 ≠ ImportProfile 已冻结；ImportProfile 未冻结，当前仍进入 P12。工作簿 HEADER-ONLY，0 数据行，不能推断真实值分布；5 个 Unsupported 与 8 个机器无法确认的映射语义留给 A/D3/R，本文不复制未合并 #6 的详细映射草案。
+
 唯一匹配已冻结 Profile 且无缺失、重复、歧义、顺序变化、未知列时才自动预填。表头行是具体 Profile 配置，不能全球固定第1或第3行。配置仓储按 profile_id/version 查批准证据；UI 的标识或布尔勾选不构成冻结证明。
 
 P12 的处置方式为 ImportColumnDisposition：PersonField 绑定唯一 ImportFieldId；BatchRawOnly 由维护员明确确认仅保存在本机 ImportRawCell，目标必须 Unspecified，不进入 Person 或公共日志；Unsupported 是默认，阻断确认。重复标题、有值无标题和未知列必须逐列处理，空白列保留物理位置，不能压缩后右移。第3行 W 当前为空，X 是备注，格式化空列不作人员。
 
 当前 27 个可导入字段由 FieldSpec.source_importable 与 ImportFieldId 联合限定。P12 提交 ImportFieldId，服务必须通过 `try_to_person_field(ImportFieldId, FieldId*)` 显式映射后查询 FieldSpec；不允许整数 cast 成 PersonFieldId，不依赖 enum 数值 identity，forged／unknown／Unspecified 均拒绝。PersonId、PersonCode、PinyinSortKey、CreatedAt、UpdatedAt、ImportBatchId、LastModifiedBy 不在目标下拉；打印序号、年龄、党龄和Tag也不在 Person 导入目标中。FullName 是唯一 required_for_import=true 的字段，但所有新建／导入状态仍必须解析为 Living 或 Deceased，不能从元数据必填标志推导 Unknown 可确认。
 
-LifeStatus 源列要求 status_source_confirmed=true，仍逐值解析；源缺失可以明确确认批次默认或采用已冻结 Profile 约定，非法源值不能被默认值掩盖。ImportStatusResolution.source 为 Unresolved／SourceColumn／ConfirmedBatchDefault／FrozenProfile／Mixed，fallback_status 与 fallback_confirmed 记录缺失值补充；确认状态来源和目标变更同样使旧预检失效。当前样表无状态列，初始不猜在世。
+LifeStatus 源列要求 status_source_confirmed=true，仍逐值解析；源缺失可以明确确认批次默认或采用已冻结 Profile 约定，非法源值不能被默认值掩盖。ImportStatusResolution.source 为 Unresolved／SourceColumn／ConfirmedBatchDefault／FrozenProfile／Mixed，fallback_status 与 fallback_confirmed 记录缺失值补充；确认状态来源和目标变更同样使旧预检失效。当前业务工作簿 HEADER-ONLY，不能从表头推定真实批次状态或值分布；状态来源与解析待 A/D3/R，初始不猜在世。
 
 ImportPreviewRequest 中的 column_bindings、status_resolution、mapping_version、profile_id、profile_version 都只是 caller proposal，不是可信批准证据。Application Service 自己读取源文件并计算 SHA-256，验证 worksheet 和表头，查询 approved Profile 与批准证据，校验 binding 并通过 try_to_person_field 显式映射，拒绝重复 Person target、Unsupported 和 unknown enum，校验 LifeStatus 来源及实际值，生成／验证可信 mapping_version，生成 preview_revision，保存 immutable preview 与 immutable checked data copy。UI 不得自行批准 Profile 或拼接可信版本。
 
@@ -245,7 +255,7 @@ ExportLogRecord在本机私有数据库保留真实output_path、snapshot_id、�
 
 ## 4. 大字号与键盘规则
 
-建议界面微软雅黑12／15／18pt，备用系统中文字体；界面字号与打印字号独立。1024×768工作区可操作，字体换档依据实际测量重排；双列表单转单列，长地址备注换行，内容滚动，底部保存取消可达；焦点自动滚入可见区。96／120／144DPI与三档字号组合留给C在Win7 RTM x86/x64验证，不能仅比例放大坐标。
+建议界面微软雅黑12／15／18pt，备用系统中文字体；界面字号与打印字号独立。1024×768工作区可操作，字体换档依据实际测量重排；双列表单转单列，长地址备注换行，内容滚动，底部保存取消可达；焦点自动滚入可见区。96／120／144DPI与三档字号组合留给C在Windows 7 SP1 / 6.1.7601 x86/x64验证，不能仅比例放大坐标。
 
 使用系统颜色和高对比度；错误文字说明字段，不能只靠红色。必要操作不能仅右键、双击或拖拽：列表箭头选行、Space勾选、Enter执行明示动作，上下移有按钮。Tab按§5.2，Shift+Tab逆序，跳过隐藏、禁用、STATIC和进度条；列表一个停靠点，日期精度及组件分别列入Tab，多行Enter换行。
 
@@ -304,7 +314,7 @@ ExportLogRecord在本机私有数据库保留真实output_path、snapshot_id、�
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | P11-01 | 工作表 | COMBOBOX CBS_DROPDOWNLIST | 选择读取对象 | 未选择 | 已读取工作簿 | 名称必须由服务枚举 | 没有可读取的工作表 |
 | P11-02 | 表头行 | EDIT＋UPDOWN | 指定表头位置 | 服务建议值或未填 | 已选工作表 | 正整数且位于工作表实际范围 | 请指定有效表头行 |
-| P11-03 | 表头预览 | SysListView32 LVS_REPORT | 查看列号和原始标题 | 只读 | 已选表头行 | 只展示服务读取的标题 | 无法读取表头，请检查工作表 |
+| P11-03 | 表头预览 | SysListView32 LVS_REPORT | 查看列号和原始标题；只读范围提示P1=Sheet1行1/52标题、P2=行3/23标题 | 只读；首期Source Profile已确认，ImportProfile未冻结 | 已选表头行 | 只展示服务读取的标题 | 无法读取表头，请检查工作表 |
 | P11-04 | 上一步 | BUTTON | 回P10 | 可用 | 空闲时 | 无输入；按页面前进条件校验 | 服务失败时留页并说明原因 |
 | P11-05 | 下一步 | BUTTON | 进入P12 | 禁用 | 工作表与表头有效 | 无输入；按页面前进条件校验 | 服务失败时留页并说明原因 |
 | P11-06 | 取消 | BUTTON | 回来源页 | 可用 | 空闲时 | 无输入；按页面前进条件校验 | 服务失败时留页并说明原因 |
@@ -321,7 +331,7 @@ ExportLogRecord在本机私有数据库保留真实output_path、snapshot_id、�
 | P12-06 | 重置选中列 | BUTTON | 重置为Unsupported，清除目标与状态源确认 | 可用 | 空闲时 | 按页面前进条件校验 | 服务失败留页并说明原因 |
 | P12-07 | 批次缺失状态默认值 | COMBOBOX CBS_DROPDOWNLIST | ImportStatusResolution.fallback_status | Unknown | 状态缺失 | Living／Deceased；非法源值不能被默认值覆盖 | 请检查输入；失败留页并保留草稿 |
 | P12-08 | 确认批次默认状态 | BUTTON BS_AUTOCHECKBOX | fallback_confirmed | 未勾选 | 默认值已明确选择 | 状态来源与确认绑定当前预检语义 | 请检查输入；失败留页并保留草稿 |
-| P12-09 | Profile与映射信息 | STATIC | caller proposal：profile_id/profile_version/mapping_version/status_resolution；可信摘要仅读service结果 | 无已冻结Profile；人工映射 | 只读 | 冻结证据来自配置仓储，不接收UI可写frozen标志 | 请检查输入；失败留页并保留草稿 |
+| P12-09 | Profile与映射信息 | STATIC | caller proposal：profile_id/profile_version/mapping_version/status_resolution；可信摘要仅读service结果 | P1/P2首期范围已确认；ImportProfile未冻结；人工映射 | 只读 | 冻结证据来自配置仓储，不接收UI可写frozen标志；Source Profile范围确认不构成ImportProfile冻结 | 请检查输入；失败留页并保留草稿 |
 | P12-10 | 上一步 | BUTTON | 回P11 | 可用 | 空闲时 | 按页面前进条件校验 | 服务失败留页并说明原因 |
 | P12-11 | 开始预检 | BUTTON | caller proposal；service读源/SHA/worksheet/approved Profile/binding/显式mapping/状态，保存immutable checked copy并生成revision | 可用 | 每列有合法处置，姓名来源明确，状态可解析；无Unsupported | 按页面前进条件校验 | 服务失败留页并说明原因 |
 | P12-12 | 取消 | BUTTON | 回来源页，无Person写入 | 可用 | 空闲时 | 按页面前进条件校验 | 服务失败留页并说明原因 |
@@ -778,7 +788,7 @@ D50／D51／文件／覆盖／帮助／历史：系统原生Tab顺序，默认�
 | RV06 模板配置 | 调四来源、活动成员、visible/列序/宽度、三字号、方向、四边距、行高；人数0自动及正数；添加删除BlankSignature；另存 | 0.1mm整数正确转换；PersonCode为固定编号；Remark不是空白列；非法版式InvalidTemplate；字体/硬边距/换行校验；种子不覆盖 | 待 R 复核 |
 | RV07 同快照三输出 | 生成多页名单记录snapshot_id/rows/顺序→固定模板→预览/xlsx/GDI→取消再执行 | total_count() == rows.size() 为派生读取，无第二份可写人数；三输出同snapshot_id同序，不重新筛选/读取Tag；跨页序号连续；作业提交与实物区分 | 待 R 复核 |
 | RV08 旧快照与失败 | 生成名单后分别编辑Person、Tag、拼音、导入、恢复、迁移→尝试预览/导出/打印；模拟备份/输出不可写、无打印机 | 旧data_version返回StaleSnapshot、输出禁用并回P30；恢复不复用版本；同临界区固定输出；失败保留数据和已有文件；私有ExportLog有真实路径，公共报告脱敏 | 待 R 复核 |
-| RV09 键盘与字号 | 键盘走各页面→Unknown/Year/YearMonth/FullDate和D20→12/15/18pt与DPI | Unknown年月日空白/disabled，不显示0；按精度仅启用活动组件；Tab跳过只读/禁用项，错误定位、按钮不裁切；Win7两VM实测后补 | 待 R 复核 |
+| RV09 键盘与字号 | 键盘走各页面→Unknown/Year/YearMonth/FullDate和D20→12/15/18pt与DPI | Unknown年月日空白/disabled，不显示0；按精度仅启用活动组件；Tab跳过只读/禁用项，错误定位、按钮不裁切；Windows 7 SP1 / 6.1.7601 x86/x64 两VM实测后补 | 待 R 复核 |
 
 R签认：姓名____；日期____；材料版本____；结论□通过 □返工 □阻塞；逐项证据____。正式非作者R签认并汇入Gate Status之前，不进入下一Gate。
 
@@ -788,19 +798,19 @@ R签认：姓名____；日期____；材料版本____；结论□通过 □返工
 
 | 编号 | 当前状态与已解决部分 | 仍待事项／责任／时点 | 当前UI处理 |
 | --- | --- | --- | --- |
-| Q01 | 唯一匹配冻结Profile策略已定义 | 两区域与第二样表、匹配条件及批准证据：A/B/R/甲方，D1；配置仓储D3 | 当前无冻结Profile，进入映射；未来自动预填仍预检 |
-| Q02 | DateValue精度和显式缺失状态契约已定义 | 第二份脱敏样表、日期解析/枚举/真实批次状态政策：A/R/甲方，D1–D3 | 不补造年月日、不猜在世、不以Unknown确认 |
+| Q01 | Q1-B：首期只有当前业务工作簿；Q2-A：P1/P2 均为首期 Source Profile | ImportProfile 冻结、唯一匹配条件和批准证据：A/R/D3 | ImportProfile 未冻结，进入 P12；范围确认不代替技术冻结 |
+| Q02 | DateValue 精度和显式缺失状态契约已定义；当前业务工作簿 HEADER-ONLY、0 数据行 | 日期解析、枚举、真实批次状态策略、数据级脱敏测试样本：A/R/甲方，D1–D3 | 不推断真实值分布，不补造年月日、不猜在世、不以Unknown确认 |
 | Q03 | CV4分离caller proposal与可信preview；Confirm绑定revision | service revalidate、可信mapping_version、immutable checked copy、幂等/事务/重复算法：A/R，D3 | Confirm可hash reread但只用checked copy入库；源缺失/变化拒绝 |
 | Q04 | Create/Edit能力与payload结构已定义 | Living/DeathDate、Deceased/Unknown、清空/回在世、备份与历史、编号格式：甲方/A/R，D1–D3 | 新建业务校验；既有LifeStatus/DeathDate只读，D20规则未批准则确认禁用 |
-| Q05 | 34字段覆盖第3行23源列，职称职务独立，不再缺目标 | 第1行重复/额外字段、第二样表、身份/类别/级别/党员代码：A/R/甲方，D1–D3 | 按物理位置逐列处置，不把额外字段混进Remark |
+| Q05 | P1 行1／52标题与 P2 行3／23标题均已纳入首期；职称职务独立 | 详细逐列处置、5 个 Unsupported、8 个机器无法确认的映射语义及值域/批准证据：A/D3/R | 按物理位置保留全列，不把额外字段混进Remark；不采用未合并#6草案为权威 |
 | Q06 | CV4 YearCount shape与两组All/Any已可表达 | 完整FilterSpec validator、filterable_fields批准、类型比较/代码值域：A/R，D4 | 两种年数shape验证；白名单候选；无敏感/系统通用筛选或Date范围 |
 | Q07 | snapshot_id与total_count()从rows.size()派生，无可写total_count | D4/D5仓储/失效/锁及三输出证据：A/B/R | 同快照同序同派生人数；StaleSnapshot阻断 |
 | Q08 | PrintTemplate四来源、0.1mm、三字号、页码和人数已补齐 | D5字体度量、xlsx单位转换、打印机硬边距及实物证据：B/C/R | 0自动人数；建议值不标冻结，版式组合校验 |
 | Q09 | 三模板候选完整，T03编号为PersonCode | 名称/用途/标题/列/字号/边距/人数/签字最终参数：甲方/R，D1意向、D5实物前批准 | 所有种子参数均为建议值 |
-| Q10 | 原生界面、大字号与键盘设计保留 | VS2017/v141_xp、Win7 RTM x86/x64、DPI/字体/打印机：C/R，D1/D2/D5 | 本轮不声称L1/L2/L3兼容通过 |
+| Q10 | 原生界面、大字号与键盘设计保留 | VS2017/v141_xp、Windows 7 SP1 / 6.1.7601 x86/x64、DPI/字体/打印机：C/R，D1/D2/D5 | 本轮不声称L1/L2/L3兼容通过 |
 | Q11 | OperatorContext、隐私边界与候选搜索已明确 | P14/P15报告由UI DTO本地生成还是新增Application Service接口、格式/ExportLog/脱敏；P20姓名prefix/Contains/exact、编号/工号exact/Contains、命中排序/空文本/重复工号：A/R，D3；仓储/历史/手册：A/B/R | P14-04/P15-04默认禁用，B不自行新增正式接口；P20标候选语义待确认 |
 | Q12 | 作者证据与R质量签认责任已明确 | L0–L3台账口径、非作者走查与Gate批准证据：R，D1及各Gate | 本轮仅作者静态检查，不代签Gate |
-| Q13 | PR2已APPROVE+merged；#3 base为main；本地CV4候选基于当前main | 本轮CV4审查头及clean ancestry由PR正文/发布快照固定；非作者R Formal Review待完成 | D1B只用#3；分支历史名称不作为版本事实；不新建PR、不先本地合并、不改保护或代签Gate |
+| Q13 | PR #8 已合并；SP1 固定内容锚点与 CV4 候选/最终审查头分别记录 | 平台 Draft/Ready、current main、PR head、merge-base、ahead/behind、基线整合与最终 Formal Review：见 PR/发布快照 | 成果继续#3；main经integration PR纳入；不本地merge/rebase/强推，不代签Gate |
 
 A核对字段、状态、字典与导入处置；B完成本稿；C验证字体/DPI/设备；非作者R逐项走查及复核基线；甲方确认编号、状态和模板。当前Gate 0未通过；不将这些待办改登记为“已完成”。
 
@@ -833,12 +843,12 @@ A核对字段、状态、字典与导入处置；B完成本稿；C验证字体/D
 | 控件编号及八项记录 | 通过 | 239项；全部编号、名称、类型、用途、默认、启用、校验、错误 |
 | Tab覆盖操作控件 | 通过 | 220项，创建/编辑模式分开；日期组件只在活动精度启用时停靠 |
 | 当前Draft与R未代签 | 通过 | 九脚本待R，契约与数据库版本分开，未声明Gate通过 |
-| 当前main契约指纹 | 通过 | 固定main的UTF-8文本SHA-256；不声称冻结Schema |
-| 原始资料指纹：退休人员名册打印小程序需求说明.docx | 通过 | 与PR2原始文件基线一致，路径为仓库相对位置 |
-| 原始资料指纹：退休人员名册打印小程序开发规划.docx | 通过 | 与PR2原始文件基线一致，路径为仓库相对位置 |
-| 原始资料指纹：七阶段开发任务清单.xlsx | 通过 | 与PR2原始文件基线一致，路径为仓库相对位置 |
-| 原始资料指纹：员工信息表11111.xlsx | 通过 | 与PR2原始文件基线一致，路径为仓库相对位置 |
-| CV4版本与基线身份 | 通过 | main、contract candidate和PR2 review head分别记录 |
+| 固定SP1内容锚点契约指纹 | 通过 | 固定SP1内容锚点的UTF-8文本SHA-256；不声称冻结Schema |
+| 原始资料指纹：退休人员名册打印小程序需求说明.docx | 通过 | 与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置 |
+| 原始资料指纹：退休人员名册打印小程序开发规划.docx | 通过 | 与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置 |
+| 原始资料指纹：七阶段开发任务清单.xlsx | 通过 | 与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置 |
+| 原始资料指纹：员工信息表11111.xlsx | 通过 | 与 OD-0002 修订后的当前受控 v2.1 基线一致，路径为仓库相对位置 |
+| CV4版本与基线身份 | 通过 | 固定SP1内容锚点、contract candidate和PR2 review head分别记录 |
 | ImportFieldId显式映射完整 | 通过 | 27个命名case；Unspecified/forged/default拒绝；nullptr保护 |
 | EditableFieldId显式映射完整 | 通过 | 28个命名case；Unspecified/forged/default拒绝；nullptr保护 |
 | UI不依赖枚举数值identity | 通过 | UI提交输入域枚举，服务显式映射后查询FieldSpec |
@@ -859,5 +869,17 @@ A核对字段、状态、字典与导入处置；B完成本稿；C验证字体/D
 | Unknown日期UI空白 | 通过 | 18个Person组件与3个D20组件；Unknown不显示0 |
 | 未闭环报告默认禁用 | 通过 | Q11待定方式/格式/ExportLog/脱敏，B不增正式接口 |
 | 搜索语义候选待确认 | 通过 | 不从search_text推定字段匹配与排序 |
+| SP1目标名称 | 通过 | 目标OS名称引用OD-0002 |
+| SP1系统版本 | 通过 | 版本7601，不代替Guest实测 |
+| 当前正文无RTM目标 | 通过 | 历史RTM证据留main历史记录 |
+| 当前正文无7600目标 | 通过 | 当前目标仅7601 |
+| 需求v2.1来源 | 通过 | 受控需求链接与版本 |
+| 规划v2.1来源 | 通过 | 受控规划链接与版本 |
+| OD-0002来源 | 通过 | 仅覆盖OS，DTO/API/CV/主发行架构不变 |
+| SP1交接来源 | 通过 | 跨轨来源与PR整合要求 |
+| Q项无第二业务工作簿未决 | 通过 | 业务范围已决定；数据级脱敏测试样本仍待 |
+| Q项无两区域性质未决 | 通过 | Q2-A决定两套首期Source Profile |
+| Q1Q2当前Owner决定 | 通过 | 单工作簿与两Profile范围分别确认 |
+| SourceProfile范围与冻结区分 | 通过 | 两Source Profile范围已确认；冻结/逐列语义仍待A/D3/R |
 
-以上仅检查作者设计结构、契约表达、模板算术及原始指纹。HTML交付检查与逐项清单对照见[交付与审核记录](D1B_交付与审核记录.md)；结构化数据和两类检查JSON位于证据目录。代码／VM／事务／GDI／xlsx版式及实物未运行；非作者R未签认。建议提交信息：`docs: 对齐D1B与ContractVersion4并重建复核证据`。
+以上仅检查作者设计结构、契约表达、模板算术及原始指纹。HTML交付检查与逐项清单对照见[交付与审核记录](D1B_交付与审核记录.md)；结构化数据和两类检查JSON位于证据目录。代码／VM／事务／GDI／xlsx版式及实物未运行；非作者R未签认。建议提交信息：`docs: 同步D1B的SP1基线与首期Source Profile决定`。
