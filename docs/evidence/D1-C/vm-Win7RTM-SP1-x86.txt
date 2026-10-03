@@ -51,14 +51,14 @@ Monitor count:               1
 3D Acceleration:             disabled
 Teleporter Enabled:          disabled
 Teleporter Port:             0
-Teleporter Address:          
-Teleporter Password:         
+Teleporter Address:
+Teleporter Password:
 Tracing Enabled:             disabled
 Allow Tracing to Access VM:  disabled
-Tracing Configuration:       
+Tracing Configuration:
 Autostart Enabled:           disabled
 Autostart Delay:             0
-Default Frontend:            
+Default Frontend:
 VM process priority:         default
 Storage Controllers:
 #0: 'SATA', Type: IntelAhci, Instance: 0, Ports: 2 (max 30), Bootable
@@ -117,4 +117,3 @@ Recording screens:           1
    Description: Windows 7 Ultimate SP1 (6.1.7601) x86 绾噣鍩虹嚎锛氭棤Office銆佹棤VC++ Redistributable銆佹棤棰濆.NET锛汭SO cn_windows_7_ultimate_with_sp1_x86_dvd_u_677486.iso SHA1 B92119F5B732ECE1C0850EDA30134536E18CCCE7
 * Guest:
 Configured memory balloon:   0MB
-

@@ -4,7 +4,7 @@
 - 完成日期：2026-10-03
 - 状态：**COMPLETE（候选）** —— VM 基线已建立；正式 Gate 0 结论由非作者 R 给出
 - 基线依据：[OD-0002 Windows 7 SP1 目标基线](../../decisions/OD-0002-Windows7-SP1目标基线.md)（Accepted，2026-10-03，经 PR #8 承载）。目标 OS 为 **Windows 7 SP1（6.1.7601 / build 7601）**，替代原 v2.0 的 Windows 7 RTM / 6.1.7600 / 不装 SP1 条款。本记录及证据均以该权威基线为准。
-- 历史说明：VM 名称 `Win7RTM-SP1-x86/x64` 为实际机器历史命名，不手改 VBoxManage 原始输出（符合 [SP1 基线交接](../../status/SP1_BASELINE_HANDOFF.md) 的 C 证据边界）。
+- 历史说明：VM 名称 `Win7RTM-SP1-x86/x64` 为实际机器历史命名。`vm-*.txt` 为 `VBoxManage showvminfo` 原始输出；因 VBoxManage 会对 `Teleporter Address:` 等键值行右侧填充空格对齐、并在末尾多输出一个空行，为通过结构层 `diff_whitespace` 检查，已由维护员对这两份文件**仅作空白规范化**（删除行尾填充空格与文件末尾空行），**未改动任何键值内容**。
 
 ## 一、介质台账
 
