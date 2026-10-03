@@ -22,7 +22,7 @@ python tools/gate0/check_contract.py --layer diff --base-ref origin/main
 
 cpp14 增加 enum_field_mapping（27 个导入／28 个编辑目标、未知值、反序 PersonFieldId 声明后的同一消费者）、field_change_value_kind（日期／文本／枚举与 clear 互斥）、filter_shape（YearCountCondition 的集合／下限与负值）。普通消费者验证 total_count() 从行集合派生，负例验证不可直接写人数。反序头文件仅生成在 build/gate0/reordered，不修改正式源码或改变 canonical 字段语义。
 
-每个执行层均记录 pr_identity（base／merge-base／HEAD 及解析命令）、Python／编译器信息和输入 SHA-256。C++ 编译与运行分别记录 command、exit_code、stdout／stderr；编译／断言失败保留诊断。当前未提交返工的 HEAD 仍是上一轮提交，新候选由输入指纹标识。逐层运行会覆盖 results.json，需要保留时复制到各自 layer-results.json。
+每个执行层均记录 pr_identity（base／merge-base／HEAD 及解析命令）、Python／编译器信息和输入 SHA-256。C++ 编译与运行分别记录 command、exit_code、stdout／stderr；编译／断言失败保留诊断。未提交候选的内容由输入指纹标识，Git HEAD 只标识已提交内容；二者不得混用。逐层运行会覆盖 results.json，需要保留时复制到各自 layer-results.json。
 
 Diff 检查默认以 origin/main 为 base，可通过 --base-ref 或 ROSTER_BASE_REF 指定。本脚本解析 base SHA、head SHA、merge-base SHA，检查 merge-base...HEAD 的已提交 PR Diff，并分别检查暂存和工作区 Diff；结果记录每条实际命令、退出码与诊断。不存在／无共同祖先的 base 明确失败。临时隔离 Git 历史回归证明：干净工作区中的已提交空白缺陷仍会失败，修复后通过，未知 base 不会空通过。未提交候选另由源文件指纹标识，当前 HEAD 不冒充未来提交。
 

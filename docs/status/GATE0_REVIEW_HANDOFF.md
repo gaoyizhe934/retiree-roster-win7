@@ -6,7 +6,9 @@
 
 Q1-B/Q2-A 已由创建者直接回答；只解决业务工作簿数量及两套 Source Profile 的首期地位。A #6 配套修改、B #3 同源重建、C #7 Guest/来源证据仍按[跨轨交接](SP1_BASELINE_HANDOFF.md)处理。当前 Gate 状态见 [GATE_STATUS](GATE_STATUS.md)。
 
-发布后，以新 PR 的真实 head、base、merge-base、输入指纹和四层 runner JSON 固定审查身份。此新范围含三份受控资料及 runner 指纹变更，不适用旧“仅两份状态文档”限制，也不继承旧 Approval。历史检查数字不冒充新提交结果。Gate 0 仍未通过。
+Windows 7 SP1 基线修订由 [PR #8](https://github.com/gaoyizhe934/retiree-roster-win7/pull/8) 承载。其 review_head、base、merge-base 及作者检查身份以 GitHub PR 正文、对应 Formal Review 和实际 HEAD 生成的 evidence JSON 为准；tracked 文档不追写当前 HEAD。历史检查数字不冒充新提交结果，旧 Approval 不覆盖本次范围。Gate 0 仍未通过。
+
+PR #8 的复核范围为 OD-0002、两份 v2.1 Word、七阶段任务台账的 OS 条款、当前入口/状态文档、基线指纹及 [SP1 二进制语义差异证据](../evidence/D1-SP1/01_受控基线OOXML语义差异.md)。该范围不适用下方 PR #2 历史中的“仅两份状态文档”限制。
 
 ---
 
