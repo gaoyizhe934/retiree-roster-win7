@@ -477,8 +477,8 @@ def main():
             "受保护区域: %s" % (inventory["protected_ranges"] or "无"),
         ]),
         ("表头区域", [
-            "区域 1（工作/质检表头）: 表头行 %d，非空标题 %d 个" % (header1, len(region1["rows"])),
-            "区域 2（人事/名册表头）: 表头行 %d，非空标题 %d 个" % (header2, len(region2["rows"])),
+            "区域 1 / Source Profile P1（sheet1-row1-v1）: 表头行 %d，非空标题 %d 个" % (header1, len(region1["rows"])),
+            "区域 2 / Source Profile P2（sheet1-row3-v1）: 表头行 %d，非空标题 %d 个" % (header2, len(region2["rows"])),
             "数据行: %d 行 -> %s" % (len(inventory["non_empty_rows"]) - len({header1, header2}),
                                     "HEADER_ONLY_SAMPLE" if header_only else "存在数据行"),
             "重复率、日期分布、脏数据比例、枚举实际值域: 未测量（无数据行，不得推断）",
