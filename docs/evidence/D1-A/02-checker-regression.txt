@@ -1,0 +1,15 @@
+PASS baseline_tree -> exit 0
+PASS undeclared_data_row -> 未声明的非空行
+PASS renamed_header -> 标题规范化键不一致
+PASS duplicate_person_target -> 候选目标重复
+PASS batch_raw_only_target -> 必须使用目标
+PASS collision_declaration -> 精确重复键声明不一致
+PASS status_source_marker -> status_source_confirmed
+PASS unimportable_target -> 目标不可由源表导入
+PASS header_row_declaration -> 声明的表头行
+PASS cross_region_target_mismatch -> 同名键目标不一致
+PASS declared_sheet_mismatch -> 声明工作表名不一致
+PASS declared_sample_mismatch -> 声明样表路径与实际输入不一致
+all D1-A regression checks passed
+PASS committed_inventory_matches -> docs/evidence/D1-A/01-source-header-inventory.txt
+PASS committed_regression_log_matches -> docs/evidence/D1-A/02-checker-regression.txt

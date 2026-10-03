@@ -1,0 +1,133 @@
+== 输入身份 ==
+文件: reference/员工信息表11111.xlsx
+SHA-256: 427727f5d8062e7cba699b35d9262fb594b717d3dd699f811cbb7475112cf5b6
+与 docs/baseline/00 基线指纹一致: 是
+工作表: Sheet1 (xl/worksheets/sheet1.xml)
+含非空单元格的行: [1, 3]
+每行非空单元格数: {'1': 52, '3': 23}
+合并单元格: ['AR1:AS1', 'AT1:AV1', 'AW1:AX1', 'AY1:BC1']
+受保护区域: [('区域1_1', 'D1:N1 P1:U1')]
+
+== 表头区域 ==
+区域 1 / Source Profile P1（sheet1-row1-v1）: 表头行 1，非空标题 52 个
+区域 2 / Source Profile P2（sheet1-row3-v1）: 表头行 3，非空标题 23 个
+数据行: 0 行 -> HEADER_ONLY_SAMPLE
+重复率、日期分布、脏数据比例、枚举实际值域: 未测量（无数据行，不得推断）
+
+== 区域 1 逐列盘点与候选处置（候选，未确认） ==
+  列  索引  原文/标题                            规范化键            处置           目标
+  A   0     'bi'                                 bi                   Unsupported    -
+  B   1     '工号'                                 工号                   PersonField    EmployeeNo
+  C   2     '姓名'                                 姓名                   PersonField    FullName
+  D   3     '身份证号'                               身份证号                 PersonField    NationalId
+  E   4     '性别'                                 性别                   PersonField    Sex
+  F   5     '民族           '                      民族                   PersonField    Ethnicity
+  G   6     '身份证提取出生年'                           身份证提取出生年             Unsupported    -
+  H   7     '身份证2026年 年龄'                        身份证2026年年龄           Unsupported    -
+  J   9     '现居地\n（快递能送到）'                       现居地（快递能送到）           BatchRawOnly   -
+  K   10    '分区'                                 分区                   BatchRawOnly   -
+  L   11    '楼号'                                 楼号                   BatchRawOnly   -
+  N   13    '市内外'                                市内外                  BatchRawOnly   -
+  O   14    '社保卡手机号'                             社保卡手机号               BatchRawOnly   -
+  P   15    '手机'                                 手机                   PersonField    Phone
+  Q   16    '手机属性'                               手机属性                 BatchRawOnly   -
+  R   17    '固定电话\n（含区号）'                        固定电话（含区号）            BatchRawOnly   -
+  S   18    '校内关系 '                              校内关系                 BatchRawOnly   -
+  T   19    '其他联系'                               其他联系                 BatchRawOnly   -
+  U   20    '其他联系'                               其他联系                 BatchRawOnly   -
+  V   21    '出生年月'                               出生年月                 PersonField    BirthDate
+  W   22    '参加工作时间'                             参加工作时间               PersonField    WorkStartDate
+  X   23    '离退休时间'                              离退休时间                PersonField    RetirementDate
+  Y   24    '退休          纪念品 领取'                 退休纪念品领取              BatchRawOnly   -
+  Z   25    '类别（管理、专业技术、工勤）'                     类别（管理、专业技术、工勤）       PersonField    PersonnelCategory
+  AA  26    '职称'                                 职称                   PersonField    ProfessionalTitle
+  AB  27    '职务'                                 职务                   PersonField    PositionTitle
+  AC  28    '政治面貌'                               政治面貌                 PersonField    PoliticalAffiliation
+  AD  29    '所属支部'                               所属支部                 PersonField    PartyBranch
+  AE  30    '身份'                                 身份                   PersonField    IdentityCategory
+  AF  31    '原部门'                                原部门                  PersonField    OriginalOrganization
+  AG  32    '名字不一致'                              名字不一致                BatchRawOnly   -
+  AH  33    '备注'                                 备注                   PersonField    Remark
+  AI  34    '姓 名'                                姓名                   BatchRawOnly   -
+  AJ  35    '身份证号'                               身份证号                 BatchRawOnly   -
+  AK  36    '性别'                                 性别                   BatchRawOnly   -
+  AL  37    '出生日期'                               出生日期                 BatchRawOnly   -
+  AM  38    '参加工作日期'                             参加工作日期               BatchRawOnly   -
+  AN  39    '民族'                                 民族                   BatchRawOnly   -
+  AO  40    '政治面貌'                               政治面貌                 BatchRawOnly   -
+  AP  41    '人员状态'                               人员状态                 PersonField    LifeStatus
+  AQ  42    '转正日期'                               转正日期                 PersonField    PartyFullMemberDate
+  AR  43    '现岗位'                                现岗位                  BatchRawOnly   -
+  AT  45    '现学历'                                现学历                  PersonField    Education
+  AW  48    '现考核'                                现考核                  Unsupported    -
+  AY  50    '现执行工资'                              现执行工资                Unsupported    -
+  BD  55    '离休、退职'                              离休、退职                BatchRawOnly   -
+  BE  56    '厅级'                                 厅级                   BatchRawOnly   -
+  BF  57    '国务院特贴'                              国务院特贴                BatchRawOnly   -
+  BG  58    '抗美援朝'                               抗美援朝                 BatchRawOnly   -
+  BH  59    '退役军人'                               退役军人                 BatchRawOnly   -
+  BI  60    '特困年度'                               特困年度                 BatchRawOnly   -
+  BJ  61    '特困原因'                               特困原因                 BatchRawOnly   -
+
+== 区域 2 逐列盘点与候选映射（既有候选文档） ==
+  列  索引  原文/标题                            规范化键            处置           目标
+  A   0     '工号'                                 工号                   PersonField    EmployeeNo
+      持久化成员: employee_no
+  B   1     '姓名 '                                姓名                   PersonField    FullName
+      持久化成员: full_name
+  C   2     '身份证号'                               身份证号                 PersonField    NationalId
+      持久化成员: national_id
+  D   3     '性别'                                 性别                   PersonField    Sex
+      持久化成员: sex
+  E   4     '民族'                                 民族                   PersonField    Ethnicity
+      持久化成员: ethnicity
+  F   5     '学历'                                 学历                   PersonField    Education
+      持久化成员: education
+  G   6     '学位'                                 学位                   PersonField    Degree
+      持久化成员: degree
+  H   7     '职称'                                 职称                   PersonField    ProfessionalTitle
+      持久化成员: professional_title
+  I   8     '职务'                                 职务                   PersonField    PositionTitle
+      持久化成员: position_title
+  J   9     '出生年月'                               出生年月                 PersonField    BirthDate
+      持久化成员: birth_date
+  K   10    '参加工作时间'                             参加工作时间               PersonField    WorkStartDate
+      持久化成员: work_start_date
+  L   11    '退休时间'                               退休时间                 PersonField    RetirementDate
+      持久化成员: retirement_date
+  M   12    '退休部门'                               退休部门                 PersonField    OriginalOrganization
+      持久化成员: original_organization
+  N   13    '政治面貌'                               政治面貌                 PersonField    PoliticalAffiliation
+      持久化成员: political_affiliation
+  O   14    '所在支部'                               所在支部                 PersonField    PartyBranch
+      持久化成员: party_branch
+  P   15    '入党时间'                               入党时间                 PersonField    PartyJoinDate
+      持久化成员: party_join_date
+  Q   16    '转正时间'                               转正时间                 PersonField    PartyFullMemberDate
+      持久化成员: party_full_member_date
+  R   17    '籍贯'                                 籍贯                   PersonField    NativePlace
+      持久化成员: native_place
+  S   18    '电话'                                 电话                   PersonField    Phone
+      持久化成员: phone
+  T   19    '亲属电话'                               亲属电话                 PersonField    RelativePhone
+      持久化成员: relative_phone
+  U   20    '身份'                                 身份                   PersonField    IdentityCategory
+      持久化成员: identity_category
+  V   21    '家庭住址'                               家庭住址                 PersonField    HomeAddress
+      持久化成员: home_address
+  X   23    '备注'                                 备注                   PersonField    Remark
+      持久化成员: remark
+
+== 覆盖与冲突检查 ==
+区域 1 处置统计: PersonField 候选 20 / BatchRawOnly 候选 27 / Unsupported 5
+区域 2 映射字段数: 23
+区域 1 精确重复键: 其他联系、姓名、性别、政治面貌、民族、身份证号
+跨区域精确同名键: 出生年月、参加工作时间、备注、姓名、工号、性别、政治面貌、民族、职务、职称、身份、身份证号
+跨区域目标一致性: 已比较 12 个同名键 -> 出生年月、参加工作时间、备注、姓名、工号、性别、政治面貌、民族、职务、职称、身份、身份证号
+无同名键可独立校验的区域 1 源键（语义判断留人工复核）: 人员状态、原部门、所属支部、手机、现学历、离退休时间、类别（管理、专业技术、工勤）、转正日期
+  重复组 其他联系: T、U
+  重复组 姓名: C、AI
+  重复组 性别: E、AK
+  重复组 政治面貌: AC、AO
+  重复组 民族: F、AN
+  重复组 身份证号: D、AJ
