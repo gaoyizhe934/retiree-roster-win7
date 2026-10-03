@@ -39,7 +39,7 @@ contract_candidate_sha 固定标识最后一个修改公共契约、contract tes
 | --- | --- | --- |
 | C-G0-01 | VS2017 15.9／v141_xp／Win32 x86／C++14／`/MT`／WINVER=0x0601／_WIN32_WINNT=0x0601，编译并运行下面六个消费者，保存逐项命令、退出、诊断和输入指纹 | 待正式工具链复核 |
 | C-G0-02 | D2 正式工程建立后，CMake 与 XMake 使用同一头文件、宏、运行库与目标，核对编译一致性 | 待 D2 工程 |
-| C-G0-03 | Win7 RTM x86 与 x64 6.1.7600、00_Base 快照，无 Office／.NET／VC++ Redistributable，保存 VS2017／v141_xp 环境记录 | 待 C 环境证据 |
+| C-G0-03 | Win7 SP1 x86 与 x64 6.1.7601、00_Base 快照，无 Office／.NET／VC++ Redistributable，保存 VS2017／v141_xp 环境记录 | 待 C 环境证据 |
 
 消费者：
 
