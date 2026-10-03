@@ -30,13 +30,25 @@
 
 快照描述：`Windows 7 Ultimate SP1 (6.1.7601) x86/x64 纯净基线：无Office、无VC++ Redistributable、无额外.NET`
 
-## 三、系统纯净性确认（人工核对）
+## 三、系统纯净性确认
 
 - 版本：Windows 7 旗舰版，6.1.7601（SP1）
 - 无 Microsoft Office
 - 无主动安装的 VC++ Redistributable
 - 无额外 .NET Framework 4.x（系统自带 .NET 3.5.1 保持默认）
 - 未安装 VirtualBox Guest Additions（符合交接文档"Gate 0 不依赖 Guest Additions"）
+
+### Guest 内证据（截图，2026-10-03 采集）
+
+每个 VM 三组截图，保存在本目录：
+
+| 证据 | x86 | x64 |
+| --- | --- | --- |
+| 系统版本（winver：Windows 7 旗舰版 / 6.1.7601 SP1） | `x86-winver-关于Windows.png` | `x64-winver-关于Windows.png` |
+| 已安装程序列表（appwiz.cpl，无 Office/VC++/额外.NET） | `x86-appwiz-程序和功能.png` | `x64-appwiz-程序和功能.png` |
+| systeminfo（OS 版本/系统类型，文本过长分两张） | `x86-systeminfo-part1.png`、`x86-systeminfo-part2.png` | `x64-systeminfo-part1.png`、`x64-systeminfo-part2.png` |
+
+截图由维护员按 C 轨 D1 步骤在 Guest 内采集并经人工核对无异常。
 
 ## 四、BLOCKER-01 状态变更
 
