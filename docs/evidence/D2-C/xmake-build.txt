@@ -1,2 +1,1 @@
-﻿[100%]: build ok, spent 0.921s
-
+[100%]: build ok, spent 0.921s
