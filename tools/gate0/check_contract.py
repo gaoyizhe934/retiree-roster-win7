@@ -16,9 +16,9 @@ from zipfile import ZipFile
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / "build" / "gate0"
 BASELINES = {
-    "docs/退休人员名册打印小程序需求说明.docx": "658b10952e2cba734990d2b37f862b2495196e51427c117cf2a4edde7992c641",
-    "docs/退休人员名册打印小程序开发规划.docx": "c1caac2094c6778363b27af2011af3cd0118fa4e96e570761479247748d347c1",
-    "reference/七阶段开发任务清单.xlsx": "7648e936d249f817bc61d43bcf109eafc94802b9a1dfd370fd23cdb45d802e26",
+    "docs/退休人员名册打印小程序需求说明.docx": "7c0240282586690886fef84e20d42f6f5c800acae952d9b23697135909a152bb",
+    "docs/退休人员名册打印小程序开发规划.docx": "241e550d9c3c4de85342f4aa064833409ce79acbe940a0e29078d23599f90d72",
+    "reference/七阶段开发任务清单.xlsx": "dc4002bef4f7d8f4084536ede7e16f6072b63facaa12e5263694391e39c46b80",
     "reference/员工信息表11111.xlsx": "427727f5d8062e7cba699b35d9262fb594b717d3dd699f811cbb7475112cf5b6",
 }
 RESULTS = []

@@ -1,19 +1,21 @@
 # 退休人员名册打印小程序
 
-面向 Windows 7 RTM 的单机离线程序：导入退休人员 Excel、维护档案、生成名单、导出 xlsx、预览和本机打印。
+面向 Windows 7 SP1 / 6.1.7601 的单机离线程序：导入退休人员 Excel、维护档案、生成名单、导出 xlsx、预览和本机打印。
 
 当前处于 Gate 0 基线稳定化阶段，公共契约为 Draft，尚无可运行程序。进入 D2 前需要 A/B/C 交付及 R 非作者签认。
 
 ## 基线入口
 
 - [基线与权威来源](docs/baseline/00_基线与权威来源.md)
-- [需求说明 v2.0](docs/退休人员名册打印小程序需求说明.docx)
-- [开发规划 v2.0](docs/退休人员名册打印小程序开发规划.docx)
+- [需求说明 v2.1](docs/退休人员名册打印小程序需求说明.docx)
+- [开发规划 v2.1](docs/退休人员名册打印小程序开发规划.docx)
 - [七阶段任务台账](reference/七阶段开发任务清单.xlsx)
 - [Gate 状态](docs/status/GATE_STATUS.md)
 - [导入 Profile](docs/baseline/01_导入Profile冻结说明.md)、[字段与数据保留](docs/baseline/02_字段映射与数据保留策略.md)、[编号口径](docs/baseline/03_标识符与编号口径.md)
 
 公共契约见 [schema_types.hpp](include/retiree_roster/schema_types.hpp)，其冻结状态见 Gate Status。业务口径以基线及已批准的局部变更为准。
+
+目标 OS 的局部修订依据 [OD-0002](docs/decisions/OD-0002-Windows7-SP1目标基线.md)，覆盖 x86/x64，API level 仍为 0x0601；[跨轨同步安排](docs/status/SP1_BASELINE_HANDOFF.md)。
 
 ## 技术与开发入口
 

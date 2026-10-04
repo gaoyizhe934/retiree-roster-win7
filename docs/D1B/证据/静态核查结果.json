@@ -1,0 +1,372 @@
+{
+  "sp1_baseline_anchor": "a0dfdd8e373ae90f765c20cf8c075a8754f674bd",
+  "contract_candidate": "e8ad944e7c9c8df77c7c5fd883c4459a75270e92",
+  "pr2_review_head": "f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4",
+  "contract_version": 4,
+  "schema_sha256": "73217a0db2469c4349c4b54bb97fd1d3ea88f01ca82285027b95d10bf3bf7161",
+  "status": "Draft",
+  "checks": [
+    {
+      "check": "34字段与契约枚举完整一致",
+      "pass": true,
+      "detail": "FieldSpec与PersonFieldId逐项及顺序核对"
+    },
+    {
+      "check": "字段能力由契约解析",
+      "pass": true,
+      "detail": "ImportFieldId/EditableFieldId与source_importable/user_editable一致"
+    },
+    {
+      "check": "系统字段边界",
+      "pass": true,
+      "detail": "6个系统专管字段无导入和编辑入口"
+    },
+    {
+      "check": "拼音创建与编辑边界",
+      "pass": true,
+      "detail": "服务初始化、禁止导入、后续可编辑"
+    },
+    {
+      "check": "唯一导入必填",
+      "pass": true,
+      "detail": "LifeStatus必须解析，独立于required_for_import元数据"
+    },
+    {
+      "check": "PersonId/PersonCode/工号三分离",
+      "pass": true,
+      "detail": "工号不作为内部ID或固定编号"
+    },
+    {
+      "check": "Person输入不收系统字段",
+      "pass": true,
+      "detail": "新增仅PersonCreateInput，编辑仅FieldChange/EditableFieldId"
+    },
+    {
+      "check": "Tag不混入Person",
+      "pass": true,
+      "detail": "独立代码、值、适用年、添加修改删除、只读审计"
+    },
+    {
+      "check": "Tag年度与审计边界",
+      "pass": true,
+      "detail": "updated_at/updated_by无提交入口；高龄不持久化"
+    },
+    {
+      "check": "日期精度覆盖",
+      "pass": true,
+      "detail": "六个DateValue字段各有精度与年月日组件；未知不为0年龄"
+    },
+    {
+      "check": "全列三种处置",
+      "pass": true,
+      "detail": "默认Unsupported；BatchRawOnly本机原值不进Person或公共日志"
+    },
+    {
+      "check": "无冻结Profile自动直入",
+      "pass": true,
+      "detail": "仅已冻结唯一匹配可预填；所有路径预检"
+    },
+    {
+      "check": "确认仅绑定revision",
+      "pass": true,
+      "detail": "预检不可变，变化获得新revision，确认无第二套语义"
+    },
+    {
+      "check": "FilterSpec全能力",
+      "pass": true,
+      "detail": "三场景、显式状态、年龄口径、集合/下限、两组All/Any、八种比较"
+    },
+    {
+      "check": "无最大年龄输入",
+      "pass": true,
+      "detail": "当前只有集合与含边界下限"
+    },
+    {
+      "check": "P40/P50消费快照",
+      "pass": true,
+      "detail": "三输出不再接收FilterSpec"
+    },
+    {
+      "check": "快照失效范围",
+      "pass": true,
+      "detail": "失效禁输出，回P30；不会混入新数据"
+    },
+    {
+      "check": "T03编号与派生列",
+      "pass": true,
+      "detail": "固定编号PersonCode；年度年龄及党龄从快照读取"
+    },
+    {
+      "check": "模板契约与来源",
+      "pass": true,
+      "detail": "模板所有成员、四来源；候选JSON另有status说明"
+    },
+    {
+      "check": "签字是独立列",
+      "pass": true,
+      "detail": "统一columns[]，无第二个签字开关"
+    },
+    {
+      "check": "物理尺寸整数与人数语义",
+      "pass": true,
+      "detail": "内部0.1mm，UI毫米转换，正数人数校验"
+    },
+    {
+      "check": "模板算术范围",
+      "pass": true,
+      "detail": "[{\"template_id\": \"T01\", \"unit\": \"0.1mm\", \"used_width\": 1540, \"available_width\": 1800, \"used_height\": 2400, \"available_height\": 2670, \"pass\": true, \"scope\": \"仅作者建议预留的算术；硬边距/字体/转换未验收\"}, {\"template_id\": \"T02\", \"unit\": \"0.1mm\", \"used_width\": 1540, \"available_width\": 1800, \"used_height\": 2380, \"available_height\": 2670, \"pass\": true, \"scope\": \"仅作者建议预留的算术；硬边距/字体/转换未验收\"}, {\"template_id\": \"T03\", \"unit\": \"0.1mm\", \"used_width\": 2520, \"available_width\": 2670, \"used_height\": 1720, \"available_height\": 1800, \"pass\": true, \"scope\": \"仅作者建议预留的算术；硬边距/字体/转换未验收\"}]"
+    },
+    {
+      "check": "控件编号及八项记录",
+      "pass": true,
+      "detail": "239项；全部编号、名称、类型、用途、默认、启用、校验、错误"
+    },
+    {
+      "check": "Tab覆盖操作控件",
+      "pass": true,
+      "detail": "220项，创建/编辑模式分开；日期组件只在活动精度启用时停靠"
+    },
+    {
+      "check": "初始焦点属于本页控件",
+      "pass": true,
+      "detail": "无操作控件聚焦容器；P15执行期明确使用容器，完成后聚焦可用按钮"
+    },
+    {
+      "check": "当前Draft与R未代签",
+      "pass": true,
+      "detail": "九脚本待R，契约与数据库版本分开，未声明Gate通过"
+    },
+    {
+      "check": "固定SP1内容锚点契约指纹",
+      "pass": true,
+      "detail": "固定SP1内容锚点的UTF-8文本SHA-256；不声称冻结Schema"
+    },
+    {
+      "check": "原始资料指纹：退休人员名册打印小程序需求说明.docx",
+      "pass": true,
+      "detail": "与 OD-0002 修订后的当前受控 v2.1 基线一致"
+    },
+    {
+      "check": "原始资料指纹：退休人员名册打印小程序开发规划.docx",
+      "pass": true,
+      "detail": "与 OD-0002 修订后的当前受控 v2.1 基线一致"
+    },
+    {
+      "check": "原始资料指纹：七阶段开发任务清单.xlsx",
+      "pass": true,
+      "detail": "与 OD-0002 修订后的当前受控 v2.1 基线一致"
+    },
+    {
+      "check": "原始资料指纹：员工信息表11111.xlsx",
+      "pass": true,
+      "detail": "与 OD-0002 修订后的当前受控 v2.1 基线一致"
+    },
+    {
+      "check": "CV4版本与基线身份",
+      "pass": true,
+      "detail": "固定SP1内容锚点、contract candidate和PR2 review head分别记录"
+    },
+    {
+      "check": "ImportFieldId显式映射完整",
+      "pass": true,
+      "detail": "27个命名case；Unspecified/forged/default拒绝；nullptr保护"
+    },
+    {
+      "check": "EditableFieldId显式映射完整",
+      "pass": true,
+      "detail": "28个命名case；Unspecified/forged/default拒绝；nullptr保护"
+    },
+    {
+      "check": "UI不依赖枚举数值identity",
+      "pass": true,
+      "detail": "UI提交输入域枚举，服务显式映射后查询FieldSpec"
+    },
+    {
+      "check": "FieldChange日期payload",
+      "pass": true,
+      "detail": "Date不得用文本或非规范Unknown作赋值"
+    },
+    {
+      "check": "FieldChange文本枚举payload",
+      "pass": true,
+      "detail": "Text/Enum必须canonical Unknown date，业务值域仍待D3"
+    },
+    {
+      "check": "clear规范Unknown",
+      "pass": true,
+      "detail": "clear必须空文本+规范未知；Identifier/Timestamp不可编辑"
+    },
+    {
+      "check": "FullName禁止UI清空",
+      "pass": true,
+      "detail": "结构检查不代替必填业务验证"
+    },
+    {
+      "check": "既有状态日期单入口",
+      "pass": true,
+      "detail": "新建按业务校验，既有只读；更正待Q04批准"
+    },
+    {
+      "check": "人数正文单一来源",
+      "pass": true,
+      "detail": "派生人数的用户说明必须出现在正文"
+    },
+    {
+      "check": "RosterResult没有可写人数",
+      "pass": true,
+      "detail": "total_count()只从rows.size()派生"
+    },
+    {
+      "check": "人数UI派生读取",
+      "pass": true,
+      "detail": "P30/P40/P50无独立人数状态"
+    },
+    {
+      "check": "YearCount空启用拒绝",
+      "pass": true,
+      "detail": "空集合且无下限不合法，关闭不约束"
+    },
+    {
+      "check": "YearCount负值拒绝",
+      "pass": true,
+      "detail": "enabled时minimum及每个accepted值均非负"
+    },
+    {
+      "check": "YearCount仅shape",
+      "pass": true,
+      "detail": "target_year/as_of_date/status/scenario/field/tag由D4完整验证"
+    },
+    {
+      "check": "预检caller proposal边界",
+      "pass": true,
+      "detail": "P12调用方版本和配置不构成可信批准证据"
+    },
+    {
+      "check": "Confirm源身份与checked copy",
+      "pass": true,
+      "detail": "源重读仅验证身份，禁止替换已检数据"
+    },
+    {
+      "check": "筛选白名单排除系统敏感",
+      "pass": true,
+      "detail": "候选白名单待A/R；编号/工号精确与日期范围待决定"
+    },
+    {
+      "check": "按类型限定Comparison",
+      "pass": true,
+      "detail": "契约比较全集不自动开放UI"
+    },
+    {
+      "check": "Unknown日期UI空白",
+      "pass": true,
+      "detail": "18个Person组件与3个D20组件；Unknown不显示0"
+    },
+    {
+      "check": "未闭环报告默认禁用",
+      "pass": true,
+      "detail": "Q11待定方式/格式/ExportLog/脱敏，B不增正式接口"
+    },
+    {
+      "check": "搜索语义候选待确认",
+      "pass": true,
+      "detail": "不从search_text推定字段匹配与排序"
+    },
+    {
+      "check": "SP1目标名称",
+      "pass": true,
+      "detail": "目标OS名称引用OD-0002"
+    },
+    {
+      "check": "SP1系统版本",
+      "pass": true,
+      "detail": "版本7601，不代替Guest实测"
+    },
+    {
+      "check": "当前正文无RTM目标",
+      "pass": true,
+      "detail": "历史RTM证据留main历史记录"
+    },
+    {
+      "check": "当前正文无7600目标",
+      "pass": true,
+      "detail": "当前目标仅7601"
+    },
+    {
+      "check": "需求v2.1来源",
+      "pass": true,
+      "detail": "受控需求链接与版本"
+    },
+    {
+      "check": "规划v2.1来源",
+      "pass": true,
+      "detail": "受控规划链接与版本"
+    },
+    {
+      "check": "OD-0002来源",
+      "pass": true,
+      "detail": "仅覆盖OS，DTO/API/CV/主发行架构不变"
+    },
+    {
+      "check": "SP1交接来源",
+      "pass": true,
+      "detail": "跨轨来源与PR整合要求"
+    },
+    {
+      "check": "Q项无第二业务工作簿未决",
+      "pass": true,
+      "detail": "业务范围已决定；数据级脱敏测试样本仍待"
+    },
+    {
+      "check": "Q项无两区域性质未决",
+      "pass": true,
+      "detail": "Q2-A决定两套首期Source Profile"
+    },
+    {
+      "check": "Q1Q2当前Owner决定",
+      "pass": true,
+      "detail": "单工作簿与两Profile范围分别确认"
+    },
+    {
+      "check": "SourceProfile范围与冻结区分",
+      "pass": true,
+      "detail": "两Source Profile范围已确认；冻结/逐列语义仍待A/D3/R"
+    },
+    {
+      "check": "语义锚点完整输出",
+      "pass": true,
+      "detail": "语义文本来自设计数据，正文与检查共用；结构能力直接核对契约和UI数据"
+    }
+  ],
+  "layout": [
+    {
+      "template_id": "T01",
+      "unit": "0.1mm",
+      "used_width": 1540,
+      "available_width": 1800,
+      "used_height": 2400,
+      "available_height": 2670,
+      "pass": true,
+      "scope": "仅作者建议预留的算术；硬边距/字体/转换未验收"
+    },
+    {
+      "template_id": "T02",
+      "unit": "0.1mm",
+      "used_width": 1540,
+      "available_width": 1800,
+      "used_height": 2380,
+      "available_height": 2670,
+      "pass": true,
+      "scope": "仅作者建议预留的算术；硬边距/字体/转换未验收"
+    },
+    {
+      "template_id": "T03",
+      "unit": "0.1mm",
+      "used_width": 2520,
+      "available_width": 2670,
+      "used_height": 1720,
+      "available_height": 1800,
+      "pass": true,
+      "scope": "仅作者建议预留的算术；硬边距/字体/转换未验收"
+    }
+  ]
+}
