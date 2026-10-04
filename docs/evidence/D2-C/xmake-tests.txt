@@ -1,0 +1,3 @@
+﻿sqlite_smoke_test: PASS (SQLite 3.45.3 static)
+build_config_test: PASS (Win32, C++14, Unicode, /MT, WINVER=0x0601)
+

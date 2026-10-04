@@ -1,0 +1,36 @@
+﻿== CMake ==
+cmake version 3.15.7
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+
+== XMake ==
+[0m[1mxmake v2.9.9+dev.a6af349ad, A cross-platform build utility based on Lua[0m[0m
+[0mCopyright (C) 2015-present Ruki Wang, [4mtboox.org[0m, [4mxmake.io[0m[0m
+[0m                         _
+    __  ___ __  __  __ _| | ______
+    \ \/ / |  \/  |/ _  | |/ / __ \
+     >  <  | \__/ | /_| |   <  ___/
+    /_/\_\_|_|  |_|\__ \|_|\_\____|
+
+                         by ruki, xmake.io
+    [0m
+[0m    point_right  [1mManual[0m: [4mhttps://xmake.io/#/getting_started[0m
+    pray  [1mDonate[0m: [4mhttps://xmake.io/#/sponsor[0m
+    [0m
+[0m   ==========================================================================
+  | [1;33mA new version of xmake is available![0m                                     |
+  |                                                                          |
+  | To update to the latest version [1mv3.1.1[0m, run "xmake update".              |
+   ==========================================================================
+[0m
+
+== MSVC (dumpbin) ==
+Microsoft (R) COFF/PE Dumper Version 14.16.27054.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+== v141_xp toolset props ==
+v141
+v141_xp
+v141
+v141_xp
