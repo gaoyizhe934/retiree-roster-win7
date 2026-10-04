@@ -1,0 +1,117 @@
+{
+  "sp1_baseline_anchor": "a0dfdd8e373ae90f765c20cf8c075a8754f674bd",
+  "contract_candidate": "e8ad944e7c9c8df77c7c5fd883c4459a75270e92",
+  "pr2_review_head": "f47fa3e251d5fa02f077a6cf9f39feeebf15d3f4",
+  "contract_version": 4,
+  "checked_input_sha256": {
+    "docs/D1B/生成/设计正文.md": "cbd4ad2f7ece7cae57c81867a97d9187a4a66adb4d0eac053c8945d0c2e51b91",
+    "docs/D1B/生成/设计数据.json": "8f5b09520fcec8285c831e2f572195178520b792e4cae3e0d10039522140dd5e",
+    "docs/D1B/生成/build_design.py": "06d63a2354b096ec1e92d2ea40561d3b6663ab668606e8a34041fcc9652c7ed2",
+    "docs/D1B/生成/test_build_design.py": "883445b9c9edd84badf0b3884f819047fca2821e00d353e2aaaa2703cdf2c942",
+    "docs/D1B/README.md": "c9388d6dd28a6cb8d782a464f2f6f9c7690efda9707c5c26e894aacabe2aaa94",
+    "docs/D1B/D1B_交付与审核记录.md": "a50caec70490c22f05160c769ad8fa81a77ee5b64d1f18ffa8bb95b81ff20c26",
+    "docs/D1B/D1B_评审修改报告.md": "8acb4748d354d2d39bf72ec7ca86669d2fd8aca24dc2f94e51bdfe4ec56306f9",
+    "include/retiree_roster/schema_types.hpp": "73217a0db2469c4349c4b54bb97fd1d3ea88f01ca82285027b95d10bf3bf7161",
+    "docs/退休人员名册打印小程序需求说明.docx": "7c0240282586690886fef84e20d42f6f5c800acae952d9b23697135909a152bb",
+    "docs/退休人员名册打印小程序开发规划.docx": "241e550d9c3c4de85342f4aa064833409ce79acbe940a0e29078d23599f90d72",
+    "reference/七阶段开发任务清单.xlsx": "dc4002bef4f7d8f4084536ede7e16f6072b63facaa12e5263694391e39c46b80",
+    "reference/员工信息表11111.xlsx": "427727f5d8062e7cba699b35d9262fb594b717d3dd699f811cbb7475112cf5b6"
+  },
+  "repository_slug": "gaoyizhe934/retiree-roster-win7",
+  "required_machine_output_encoding": "utf-8",
+  "review_head_source": "PR #3 当前head及提交后发布快照",
+  "validation_subject": "当前CV4设计源及产物指纹；Git审查头由PR与提交后复核快照固定，不在生成物内追写自身SHA",
+  "checks": [
+    {
+      "check": "MD/HTML全部标题一致",
+      "pass": true,
+      "detail": "43个标题同序同文"
+    },
+    {
+      "check": "九章目录全部可定位",
+      "pass": true,
+      "detail": "九个正文主章节"
+    },
+    {
+      "check": "离线资源",
+      "pass": true,
+      "detail": "无外部JS/CSS/图片/iframe；基线资料链接需联网，内容无需联网"
+    },
+    {
+      "check": "表格与SVG完整",
+      "pass": true,
+      "detail": "38张表与1张阶段SVG，完整Mermaid图源可展开"
+    },
+    {
+      "check": "34字段与Tag完整显示",
+      "pass": true,
+      "detail": "全部字段能力、日期组件、独立Tag控件"
+    },
+    {
+      "check": "Q/RV/T完整",
+      "pass": true,
+      "detail": "13对接项、9复核脚本、3模板"
+    },
+    {
+      "check": "文档本地链接有效",
+      "pass": true,
+      "detail": "先协议/绝对路径/仓库边界判断，再查询仓库内相对文件"
+    },
+    {
+      "check": "HTML链接协议与仓库边界",
+      "pass": true,
+      "detail": "a[href]仅HTTPS、锚点或仓库内相对路径；不依赖exists偶然拒绝协议"
+    },
+    {
+      "check": "无未替换占位符",
+      "pass": true,
+      "detail": "控件/字段/Tab/模板/静态检查均已生成"
+    },
+    {
+      "check": "公共材料无私有绝对路径",
+      "pass": true,
+      "detail": "README、正文、HTML、交接、修改报告及JSON证据全量扫描；HTTPS不误判为盘符"
+    },
+    {
+      "check": "公共材料无真实敏感值",
+      "pass": true,
+      "detail": "无完整证号或大陆手机号；没有导入人员原值"
+    },
+    {
+      "check": "未虚报功能/Gate",
+      "pass": true,
+      "detail": "仅作者静态证据，非产品兼容验收"
+    },
+    {
+      "check": "三模板全值同步",
+      "pass": true,
+      "detail": "MD/HTML由同一JSON模板源渲染"
+    },
+    {
+      "check": "长表阅读与键盘横移",
+      "pass": true,
+      "detail": "控件表有明确列宽，滚动区可键盘聚焦；打印恢复100%宽度"
+    },
+    {
+      "check": "正式设计无内部技能术语",
+      "pass": true,
+      "detail": "设计与修订日期分离"
+    },
+    {
+      "check": "SVG与Mermaid节点一致",
+      "pass": true,
+      "detail": "比较实际SVG标签与完整Mermaid节点，不只计数；拒绝重复节点"
+    },
+    {
+      "check": "SVG与Mermaid路径一致",
+      "pass": true,
+      "detail": "核心路径、失败返回与条件标签逐项一致"
+    }
+  ],
+  "commands": [
+    "python docs/D1B/生成/build_design.py",
+    "python docs/D1B/生成/build_design.py --check",
+    "python docs/D1B/生成/test_build_design.py"
+  ],
+  "scope": "MD/HTML及公共证据结构，非产品功能测试；HTML目视记录见审核记录"
+}

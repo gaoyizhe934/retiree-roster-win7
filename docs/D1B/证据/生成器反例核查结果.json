@@ -1,0 +1,170 @@
+{
+  "scope": "当前生成器的故意损坏输入反例，非C++/产品测试",
+  "checks": [
+    {
+      "check": "反例前完整输入通过",
+      "pass": true,
+      "detail": "先验证所有静态检查通过，避免因原输入失败产生假阳性"
+    },
+    {
+      "check": "反例：ImportFieldId显式映射完整",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：EditableFieldId显式映射完整",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：CV4版本与基线身份",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：FieldChange日期payload",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：FieldChange文本枚举payload",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：clear规范Unknown",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：RosterResult没有可写人数",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：YearCount空启用拒绝",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：YearCount负值拒绝",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：Confirm源身份与checked copy",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：SP1目标名称",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：SP1系统版本",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：Q项无第二业务工作簿未决",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：Q项无两区域性质未决",
+      "pass": true,
+      "detail": "故意回退输入；对应检查应失败"
+    },
+    {
+      "check": "反例：v2.1指纹回退v2.0",
+      "pass": true,
+      "detail": "旧SHA必须被当前受控文件检查拒绝"
+    },
+    {
+      "check": "反例：SourceProfile范围与冻结区分",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：FullName禁止UI清空",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：既有状态日期单入口",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：筛选白名单排除系统敏感",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：按类型限定Comparison",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：Unknown日期UI空白",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：未闭环报告默认禁用",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：搜索语义候选待确认",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：初始焦点属于本页控件",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：语义锚点完整输出",
+      "pass": true,
+      "detail": "故意错误UI数据；对应检查应失败"
+    },
+    {
+      "check": "反例：危险链接 javascript",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：危险链接 data",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：危险链接 //outside/share/x",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：危险链接 C",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：危险链接 ../../../outside/x",
+      "pass": true,
+      "detail": "Markdown与实际a[href]都必须显式拒绝"
+    },
+    {
+      "check": "反例：Mermaid节点漂移",
+      "pass": true,
+      "detail": "保持SVG模型不变，只改Mermaid标签"
+    },
+    {
+      "check": "反例：Mermaid路径漂移",
+      "pass": true,
+      "detail": "核心边变更必须使交付检查失败"
+    }
+  ]
+}
