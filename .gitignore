@@ -35,3 +35,6 @@ logs/**
 __pycache__/
 *.pyc
 辅助生成文件/
+
+# 第三方源包归档（SHA-256 记录在 third_party/README.md）
+third_party/archives/

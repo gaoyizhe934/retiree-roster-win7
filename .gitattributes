@@ -11,3 +11,7 @@ CMakeLists.txt text eol=lf
 *.cmd text eol=crlf
 *.docx binary
 *.xlsx binary
+
+# Vendored third-party sources keep upstream bytes and are exempt from the
+# project whitespace gate (the vendored file fingerprint is recorded instead).
+third_party/sqlite/** text eol=lf whitespace=-trailing-space

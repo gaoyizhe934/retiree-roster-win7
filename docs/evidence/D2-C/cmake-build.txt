@@ -1,0 +1,51 @@
+Microsoft (R) Build Engine version 15.9.30+gc0e4b0e683 for .NET Framework (localized banner normalized)
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\ZERO_CHECK.vcxproj]
+  Checking Build System
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\build_config_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  build_config_test.cpp
+  build_config_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\build_config_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\consumer_contract_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  consumer_contract_test.cpp
+  consumer_contract_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\consumer_contract_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\date_value_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  date_value_test.cpp
+  date_value_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\date_value_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\enum_field_mapping_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  enum_field_mapping_test.cpp
+  enum_field_mapping_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\enum_field_mapping_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\field_change_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  field_change_test.cpp
+  field_change_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\field_change_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\filter_shape_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  filter_shape_test.cpp
+  filter_shape_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\filter_shape_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\input_authority_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  input_authority_test.cpp
+  input_authority_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\input_authority_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\preview_revision_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  preview_revision_test.cpp
+  preview_revision_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\preview_revision_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\roster_app.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  main_win32.cpp
+  roster_app.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\app.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\roster_sqlite.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  sqlite3.c
+  roster_sqlite.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\roster_sqlite.lib
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\sqlite_smoke_test.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt
+  sqlite_smoke_test.cpp
+  sqlite_smoke_test.vcxproj -> C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\Release\sqlite_smoke_test.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\Common7\IDE\VC\VCTargets\Platforms\Win32\PlatformToolsets\v141_xp\Toolset.targets(39,5): warning MSB8051: Windows XP support is deprecated (localized warning text normalized for readability) [C:\Users\LYF\Desktop\old man\build\vs2017-win32-release\ALL_BUILD.vcxproj]
+  Building Custom Rule C:/Users/LYF/Desktop/old man/CMakeLists.txt

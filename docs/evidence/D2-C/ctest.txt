@@ -1,0 +1,23 @@
+Test project C:/Users/LYF/Desktop/old man/build/vs2017-win32-release
+    Start 1: build_config_test
+1/9 Test #1: build_config_test ................   Passed    0.18 sec
+    Start 2: consumer_contract_test
+2/9 Test #2: consumer_contract_test ...........   Passed    0.15 sec
+    Start 3: date_value_test
+3/9 Test #3: date_value_test ..................   Passed    0.16 sec
+    Start 4: enum_field_mapping_test
+4/9 Test #4: enum_field_mapping_test ..........   Passed    0.15 sec
+    Start 5: field_change_test
+5/9 Test #5: field_change_test ................   Passed    0.21 sec
+    Start 6: filter_shape_test
+6/9 Test #6: filter_shape_test ................   Passed    0.22 sec
+    Start 7: input_authority_test
+7/9 Test #7: input_authority_test .............   Passed    0.16 sec
+    Start 8: preview_revision_test
+8/9 Test #8: preview_revision_test ............   Passed    0.23 sec
+    Start 9: sqlite_smoke_test
+9/9 Test #9: sqlite_smoke_test ................   Passed    0.41 sec
+
+100% tests passed, 0 tests failed out of 9
+
+Total Test time (real) =   1.90 sec
