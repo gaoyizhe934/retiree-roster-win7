@@ -3,10 +3,10 @@
 # static runtime (/MT), WINVER/_WIN32_WINNT=0x0601, Windows 7 SP1.
 #
 # Reproducible command (recorded in the D2-C evidence):
-#   cmake -S . -B build\vs2017-win32-release -G "Visual Studio 15 2017" -A Win32 \
+#   cmake -S . -B build\vs2017-win32-release -G "Visual Studio 15 2017" -A Win32 -T v141_xp \
 #         -DAPP_STATIC_RUNTIME=ON -DAPP_ENABLE_TESTS=ON
 #   cmake --build build\vs2017-win32-release --config Release
-#   ctest --test-dir build\vs2017-win32-release -C Release --output-on-failure
+#   cd build\vs2017-win32-release && ctest -C Release --output-on-failure
 #   cmake --install build\vs2017-win32-release --config Release --prefix dist\candidate
 
 cmake_minimum_required(VERSION 3.15)
@@ -14,11 +14,14 @@ cmake_minimum_required(VERSION 3.15)
 # CMP0091: select the MSVC runtime through CMAKE_MSVC_RUNTIME_LIBRARY.
 cmake_policy(SET CMP0091 NEW)
 
-# The formal toolchain is the VS2017 Windows XP platform toolset.
-# Must be a cache entry set before the first project() call.
-set(CMAKE_GENERATOR_TOOLSET "v141_xp" CACHE STRING "MSVC platform toolset (formal build)" FORCE)
-
 project(retiree_roster VERSION 0.1.0 LANGUAGES C CXX)
+
+# The v141_xp platform toolset is selected on the command line (-T v141_xp).
+# Project code must not modify CMAKE_GENERATOR_TOOLSET (undefined behaviour);
+# it only asserts the toolset the generator actually selected.
+if(NOT CMAKE_VS_PLATFORM_TOOLSET STREQUAL "v141_xp")
+    message(FATAL_ERROR "The formal build requires the v141_xp platform toolset; configure with -T v141_xp.")
+endif()
 
 if(NOT MSVC)
     message(FATAL_ERROR "The formal build requires MSVC (Visual Studio 15 2017, v141_xp).")
